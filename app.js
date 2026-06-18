@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js';
 
-// Pre-populated experiences representing Amr Samir Edris's actual portfolio as a fallback
+// Fallback dataset pre-populated representing Amr Samir Edris's actual portfolio details
 const FALLBACK_EXPERIENCES = [
   {
     id: "def-game-expo-2026",
@@ -9,10 +9,10 @@ const FALLBACK_EXPERIENCES = [
     location: "Dubai, UAE",
     date_range: "2026",
     category: "Gaming & Esports",
-    description: "Main Project Lead for the Dubai Esports & Games Festival (DET / Visit Dubai). Managed full event lifecycle including production planning and vendor coordination.",
+    description: "Main Project Lead for the Dubai Esports & Games Festival (DET / Visit Dubai). Directed full event lifecycle covering concept development, client briefings, budget allocations, and vendor logistics.",
     details: [
-      "Led production planning, weekly alignment with DET, Eventify, Gamers Hub, and Tech X Hub.",
-      "Built Run-of-Show, activities/tournaments workbook, and talent scheduling across hosts.",
+      "Led production planning and weekly alignment with government client DET, Eventify, Gamers Hub, and Tech X Hub.",
+      "Built Run-of-Show, activities workbook, and talent scheduling across hosts.",
       "Managed stage, technical production crew, and vendor coordination across 4+ partner agencies.",
       "Author of the original proposal, concept deck, and BOQ."
     ],
@@ -38,7 +38,7 @@ const FALLBACK_EXPERIENCES = [
   {
     id: "ea-sports-fc-2025",
     role: "Project Lead & Content Manager",
-    company: "Zawaya Group (EA Sports FC Ramadan)",
+    company: "Zawaya Group (EA Sports FC)",
     location: "KSA & UAE",
     date_range: "2025",
     category: "Gaming & Esports",
@@ -118,36 +118,36 @@ const FALLBACK_EXPERIENCES = [
 ];
 
 const FALLBACK_LOGOS = [
-  { name: "COP28 Dubai", isPlaceholder: true },
-  { name: "Expo 2020 Dubai", isPlaceholder: true },
-  { name: "Formula 1 Abu Dhabi", isPlaceholder: true },
-  { name: "DET Visit Dubai", isPlaceholder: true },
-  { name: "Louvre Abu Dhabi", isPlaceholder: true },
-  { name: "EA Sports", isPlaceholder: true },
-  { name: "Sony", isPlaceholder: true },
-  { name: "Emaar", isPlaceholder: true },
-  { name: "FP7 McCann", isPlaceholder: true },
-  { name: "McDonald's", isPlaceholder: true }
+  { name: "COP28 Dubai" },
+  { name: "Expo 2020 Dubai" },
+  { name: "Formula 1 Abu Dhabi" },
+  { name: "DET Visit Dubai" },
+  { name: "Louvre Abu Dhabi" },
+  { name: "EA Sports" },
+  { name: "Sony" },
+  { name: "Emaar" },
+  { name: "FP7 McCann" },
+  { name: "McDonald's" }
 ];
 
 const FALLBACK_CONTENT = {
   name: "Amr Samir Edris",
-  titles: ["Project Manager", "Marketing Strategist", "AI & Tech Consultant"],
+  titles: ["immersive experiences.", "large-scale productions.", "brand strategies."],
   summary: "Senior Project Manager with 5+ years of experience delivering mega events, large-scale government productions, and digital marketing campaigns across the MENA region.",
   email: "amrsamiredris@gmail.com",
   phone: "+971542191028",
   linkedin: "https://linkedin.com/in/amrsamiredris",
-  cv_url: "", // will fallback to assets folder if empty
+  cv_url: "",
   portfolio_url: ""
 };
 
-// Global State
+// Global states
 let experiences = [];
 let siteContent = {};
 let activeTitles = [];
 let rotatorTimer = null;
 
-// Initialize App
+// Initializer
 document.addEventListener('DOMContentLoaded', async () => {
   setupHashRouting();
   await loadContent();
@@ -156,14 +156,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupInteractivity();
 });
 
-// Listen to Hash Changes (Single-Page App routing)
 window.addEventListener('hashchange', setupHashRouting);
 
 function setupHashRouting() {
   const hash = window.location.hash;
   if (hash === '#admin' || hash.startsWith('#admin/')) {
     document.body.classList.add('admin-mode');
-    // Trigger admin check from admin.js if exists
     if (window.initializeAdminPanel) {
       window.initializeAdminPanel();
     }
@@ -172,10 +170,10 @@ function setupHashRouting() {
   }
 }
 
-// Fetch general content from Supabase
+// Fetch database site settings
 async function loadContent() {
   try {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    if (!supabase) throw new Error('Supabase client unavailable');
     
     const { data, error } = await supabase
       .from('site_content')
@@ -184,46 +182,41 @@ async function loadContent() {
     if (error || !data || data.length === 0) {
       siteContent = FALLBACK_CONTENT;
     } else {
-      // Map key-values from database table
       siteContent = {};
       data.forEach(item => {
         siteContent[item.key] = item.value;
       });
-      // Merge defaults for missing fields
       siteContent = { ...FALLBACK_CONTENT, ...siteContent };
     }
   } catch (err) {
     siteContent = FALLBACK_CONTENT;
   }
   
-  // Render General Info
-  document.getElementById('client-name').textContent = siteContent.name;
+  // Render general profile texts
   document.getElementById('client-summary').textContent = siteContent.summary;
   
   const emailEl = document.getElementById('client-email');
-  emailEl.textContent = siteContent.email;
+  emailEl.querySelector('span').textContent = siteContent.email;
   emailEl.href = `mailto:${siteContent.email}`;
   
-  document.getElementById('client-phone').textContent = siteContent.phone;
+  document.getElementById('client-phone').querySelector('span').textContent = siteContent.phone;
   
   const linkedinEl = document.getElementById('client-linkedin');
-  linkedinEl.textContent = siteContent.linkedin.replace('https://', '').replace('www.', '');
+  linkedinEl.querySelector('span').textContent = siteContent.linkedin.replace('https://', '').replace('www.', '');
   linkedinEl.href = siteContent.linkedin;
 
-  // Setup rotating job titles
+  // Setup rotating text words
   activeTitles = Array.isArray(siteContent.titles) ? siteContent.titles : siteContent.titles.split(',').map(t => t.trim());
   setupTitleRotator();
 
-  // Set file download URLs
+  // Load document PDF links
   setupFileLinks();
 }
 
-// Set URLs for CV and Portfolio downloads
 async function setupFileLinks() {
   let cvUrl = siteContent.cv_url;
   let portfolioUrl = siteContent.portfolio_url;
 
-  // If Supabase Storage is configured, fetch live URLs from "assets" bucket
   try {
     if (supabase && (!cvUrl || !portfolioUrl)) {
       const { data: cvData } = supabase.storage.from('assets').getPublicUrl('cv.pdf');
@@ -233,40 +226,35 @@ async function setupFileLinks() {
       if (portData?.publicUrl) portfolioUrl = portData.publicUrl;
     }
   } catch (e) {
-    console.log("Could not fetch storage URLs directly, falling back to local files.");
+    console.log("Supabase storage error, using local assets folder fallbacks.");
   }
 
-  // Fallback to local files if Supabase urls not loaded
   const finalCvUrl = cvUrl || './assets/cv.pdf';
   const finalPortUrl = portfolioUrl || './assets/portfolio.pdf';
 
-  // Set download hrefs
   document.getElementById('btn-download-cv').href = finalCvUrl;
   document.getElementById('btn-download-portfolio').href = finalPortUrl;
   
-  // Set mobile viewer hrefs
   document.getElementById('cv-mobile-link').href = finalCvUrl;
   document.getElementById('portfolio-mobile-link').href = finalPortUrl;
 
-  // Pre-load iframes (will load only when toggled to save initial page load time)
   document.getElementById('btn-view-cv').dataset.url = finalCvUrl;
   document.getElementById('btn-view-portfolio').dataset.url = finalPortUrl;
 }
 
-// Setup Rotating Titles Animation
+// Subtitle Rotating words controller
 function setupTitleRotator() {
-  const wrapper = document.querySelector('.rotating-text-wrapper');
+  const wrapper = document.querySelector('.rotating-words-container');
   if (!wrapper) return;
 
-  // Clear existing items
   wrapper.innerHTML = '';
   
   activeTitles.forEach((title, idx) => {
-    const el = document.createElement('div');
-    el.className = `rotating-text ${idx === 0 ? 'active' : ''}`;
-    el.id = `rotator-${idx}`;
-    el.textContent = title;
-    wrapper.appendChild(el);
+    const span = document.createElement('span');
+    span.className = `rotating-word ${idx === 0 ? 'active' : ''}`;
+    span.id = `rotator-${idx}`;
+    span.textContent = title;
+    wrapper.appendChild(span);
   });
 
   if (rotatorTimer) clearInterval(rotatorTimer);
@@ -276,33 +264,33 @@ function setupTitleRotator() {
   rotatorTimer = setInterval(() => {
     const activeEl = document.getElementById(`rotator-${currentIdx}`);
     if (activeEl) {
-      activeEl.className = 'rotating-text exit';
+      activeEl.className = 'rotating-word exit';
     }
     
     currentIdx = (currentIdx + 1) % activeTitles.length;
     
     const nextEl = document.getElementById(`rotator-${currentIdx}`);
     if (nextEl) {
-      nextEl.className = 'rotating-text active';
+      nextEl.className = 'rotating-word active';
     }
     
-    // Cleanup exit animations after animation completes
+    // Clear exit state classes after transition
     setTimeout(() => {
       activeTitles.forEach((_, idx) => {
         if (idx !== currentIdx) {
           const el = document.getElementById(`rotator-${idx}`);
-          if (el) el.className = 'rotating-text';
+          if (el) el.className = 'rotating-word';
         }
       });
-    }, 500);
+    }, 400);
     
-  }, 3000);
+  }, 3200);
 }
 
-// Fetch experience cards from Supabase
+// Load experiences grid
 async function loadExperiences() {
   try {
-    if (!supabase) throw new Error('Supabase not initialized');
+    if (!supabase) throw new Error('Supabase connection unavailable');
     
     const { data, error } = await supabase
       .from('experiences')
@@ -321,7 +309,7 @@ async function loadExperiences() {
   renderExperiences('all');
 }
 
-// Render experience grid
+// Render bento layout grid
 function renderExperiences(filter = 'all') {
   const grid = document.getElementById('projects-grid');
   if (!grid) return;
@@ -332,66 +320,80 @@ function renderExperiences(filter = 'all') {
     ? experiences 
     : experiences.filter(exp => exp.category === filter);
     
-  filtered.forEach(exp => {
+  filtered.forEach((exp, idx) => {
     const card = document.createElement('div');
-    card.className = 'project-card glass';
+    
+    // Asymmetric Bento Grid styling distribution
+    // Alternate Span-2 and Medium sizes for a dynamic rhythm
+    let bentoClass = 'bento-card bento-card-medium';
+    if (idx === 0 || idx === 3 || idx === 6) {
+      bentoClass = 'bento-card bento-card-large bento-card-span-2';
+    }
+    
+    card.className = bentoClass;
     card.dataset.id = exp.id;
     
-    const bulletText = exp.description || (exp.details && exp.details[0]) || '';
+    const summaryText = exp.description || '';
     
     card.innerHTML = `
-      <div class="project-card-header">
-        <span class="project-tag">${exp.category}</span>
-        <span class="project-date">${exp.date_range}</span>
-      </div>
-      <h3>${exp.role}</h3>
-      <div class="project-company">${exp.company}</div>
-      <p class="project-description">${bulletText}</p>
-      
-      <div class="project-metrics">
-        <div class="metric-box">
-          <div class="metric-val">${exp.impact_metrics?.val1 || 'Active'}</div>
-          <div class="metric-lbl">${exp.impact_metrics?.lbl1 || 'Status'}</div>
+      <div>
+        <div class="bento-card-top">
+          <span class="bento-card-badge">${exp.category}</span>
+          <span class="bento-card-date">${exp.date_range}</span>
         </div>
-        <div class="metric-box">
-          <div class="metric-val">${exp.impact_metrics?.val2 || 'N/A'}</div>
-          <div class="metric-lbl">${exp.impact_metrics?.lbl2 || 'Metric'}</div>
+        <div class="bento-card-content">
+          <h3>${exp.role}</h3>
+          <div class="bento-card-company">${exp.company}</div>
+          <p class="bento-card-desc">${summaryText}</p>
+        </div>
+      </div>
+      
+      <div class="bento-card-metrics">
+        <div>
+          <div class="bento-metric-val">${exp.impact_metrics?.val1 || 'Active'}</div>
+          <div class="bento-metric-lbl">${exp.impact_metrics?.lbl1 || 'Status'}</div>
+        </div>
+        <div>
+          <div class="bento-metric-val">${exp.impact_metrics?.val2 || 'N/A'}</div>
+          <div class="bento-metric-lbl">${exp.impact_metrics?.lbl2 || 'Metric'}</div>
         </div>
       </div>
     `;
+    
+    // Add Mouse Glow micro-interactions
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--x', `${x}px`);
+      card.style.setProperty('--y', `${y}px`);
+    });
     
     card.addEventListener('click', () => openDetailModal(exp));
     grid.appendChild(card);
   });
 }
 
-// Render dynamic sliding logo marquee
+// Render infinite brand scrolling marquee
 function renderLogoMarquee() {
   const marquee = document.getElementById('logo-marquee');
   if (!marquee) return;
   
   marquee.innerHTML = '';
   
-  // Render two copies for seamless infinite scroll loops
-  const logos = FALLBACK_LOGOS; // Can query from DB/Storage in future
+  const logos = FALLBACK_LOGOS;
+  // Duplicate three times for seamless visual panning loops
+  const tripleLogos = [...logos, ...logos, ...logos];
   
-  const doubleLogos = [...logos, ...logos, ...logos]; // Repeat enough times to fill screen width
-  
-  doubleLogos.forEach(logo => {
+  tripleLogos.forEach(logo => {
     const div = document.createElement('div');
-    div.className = 'logo-item';
-    
-    // For now, render high-end glassmorphic placeholders with text
-    div.innerHTML = `<span style="font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; opacity: 0.7;">${logo.name}</span>`;
-    
-    // If we have actual image files loaded later, we can do:
-    // div.innerHTML = `<img src="${logo.url}" alt="${logo.name}">`;
-    
+    div.className = 'brand-marquee-item';
+    div.innerHTML = `<span>${logo.name}</span>`;
     marquee.appendChild(div);
   });
 }
 
-// Open detail modal with project case study details
+// Modal popups for Case details
 function openDetailModal(exp) {
   const modal = document.getElementById('detail-modal');
   const content = document.getElementById('modal-body-content');
@@ -403,62 +405,60 @@ function openDetailModal(exp) {
 
   let bulletsHtml = '';
   detailsList.forEach(bullet => {
-    // strip leading dash if present
-    const clean = bullet.replace(/^-\s*/, '');
-    bulletsHtml += `<li>${clean}</li>`;
+    bulletsHtml += `<li>${bullet.replace(/^-\s*/, '')}</li>`;
   });
   
   content.innerHTML = `
-    <span class="section-tag" style="margin-bottom: 12px;">${exp.category}</span>
+    <span class="bento-card-badge" style="display: inline-block; margin-bottom: 16px;">${exp.category}</span>
     <h2>${exp.role}</h2>
-    <div class="modal-subtitle">
-      <span>${exp.company}</span>
+    <div class="modal-subtitle-row">
+      <span class="modal-subtitle-company">${exp.company}</span>
       <span>&bull;</span>
       <span>${exp.location || ''}</span>
       <span>&bull;</span>
       <span>${exp.date_range}</span>
     </div>
     
-    <div class="modal-section">
-      <h4>Brief & Scope</h4>
-      <p>${exp.description || 'Managing full project lifecycles covering concept development, client briefings, budget allocations, vendor logistics, and production delivery.'}</p>
-    </div>
-    
-    <div class="modal-section">
-      <h4>Key Execution & Responsibilities</h4>
-      <ul class="modal-bullets">
-        ${bulletsHtml || '<li>Owned end-to-end client relationship management and vendor delivery pipelines.</li><li>Managed budget metrics and project schedules.</li>'}
-      </ul>
-    </div>
-    
-    <div class="modal-section" style="border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 24px;">
-      <h4>Impact & Results</h4>
-      <div style="display: flex; gap: 32px; flex-wrap: wrap;">
-        <div>
-          <div style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: #fff;">${exp.impact_metrics?.val1 || 'Delivered'}</div>
-          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">${exp.impact_metrics?.lbl1 || 'Impact'}</div>
+    <div class="modal-grid-layout">
+      <div>
+        <div class="modal-section">
+          <div class="modal-section-title">Operational Scope</div>
+          <p class="modal-section-body" style="color: var(--text-secondary); line-height: 1.75;">${exp.description || ''}</p>
         </div>
-        <div>
-          <div style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: #fff;">${exp.impact_metrics?.val2 || 'Success'}</div>
-          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">${exp.impact_metrics?.lbl2 || 'Metric'}</div>
+        
+        <div class="modal-section">
+          <div class="modal-section-title">Key Execution Deliverables</div>
+          <ul class="modal-bullets-list">
+            ${bulletsHtml || '<li>Owned end-to-end event planning.</li>'}
+          </ul>
+        </div>
+      </div>
+      
+      <div class="modal-sidebar-metrics">
+        <div class="modal-metric-card">
+          <div class="modal-metric-num">${exp.impact_metrics?.val1 || 'Delivered'}</div>
+          <div class="modal-metric-desc">${exp.impact_metrics?.lbl1 || 'Result'}</div>
+        </div>
+        <div class="modal-metric-card">
+          <div class="modal-metric-num">${exp.impact_metrics?.val2 || 'Success'}</div>
+          <div class="modal-metric-desc">${exp.impact_metrics?.lbl2 || 'Metric'}</div>
         </div>
       </div>
     </div>
   `;
   
   modal.classList.add('active');
-  document.body.style.overflow = 'hidden'; // prevent page scrolling background
+  document.body.style.overflow = 'hidden';
 }
 
-// Setup Event Listeners
+// Global click wireframes
 function setupInteractivity() {
-  // Category Filters
+  // Category Filtering
   const filters = document.getElementById('experience-filters');
   if (filters) {
     filters.addEventListener('click', (e) => {
-      if (e.target.classList.contains('filter-btn')) {
-        // Toggle active
-        filters.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      if (e.target.classList.contains('tag-filter')) {
+        filters.querySelectorAll('.tag-filter').forEach(btn => btn.classList.remove('active'));
         e.target.classList.add('active');
         
         const filterVal = e.target.dataset.filter;
@@ -467,7 +467,7 @@ function setupInteractivity() {
     });
   }
 
-  // Modals close
+  // Close Modals
   const modal = document.getElementById('detail-modal');
   const closeBtn = document.getElementById('btn-close-modal');
   if (closeBtn && modal) {
@@ -482,9 +482,9 @@ function setupInteractivity() {
     document.body.style.overflow = '';
   }
 
-  // PDF Previews toggle
-  const cvSec = document.getElementById('cv-viewer-section');
-  const portSec = document.getElementById('portfolio-viewer-section');
+  // Document slide panel drawers
+  const cvDrawer = document.getElementById('cv-viewer-section');
+  const portDrawer = document.getElementById('portfolio-viewer-section');
   
   document.getElementById('btn-view-cv').addEventListener('click', (e) => {
     const url = e.target.dataset.url;
@@ -493,13 +493,13 @@ function setupInteractivity() {
       iframe.src = url;
     }
     
-    cvSec.classList.add('active');
-    portSec.classList.remove('active'); // toggle off other
-    cvSec.scrollIntoView({ behavior: 'smooth' });
+    cvDrawer.classList.add('active');
+    portDrawer.classList.remove('active');
+    cvDrawer.scrollIntoView({ behavior: 'smooth' });
   });
 
   document.getElementById('btn-close-cv').addEventListener('click', () => {
-    cvSec.classList.remove('active');
+    cvDrawer.classList.remove('active');
     document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
   });
 
@@ -510,13 +510,13 @@ function setupInteractivity() {
       iframe.src = url;
     }
     
-    portSec.classList.add('active');
-    cvSec.classList.remove('active'); // toggle off other
-    portSec.scrollIntoView({ behavior: 'smooth' });
+    portDrawer.classList.add('active');
+    cvDrawer.classList.remove('active');
+    portDrawer.scrollIntoView({ behavior: 'smooth' });
   });
 
   document.getElementById('btn-close-portfolio').addEventListener('click', () => {
-    portSec.classList.remove('active');
+    portDrawer.classList.remove('active');
     document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
   });
 }
