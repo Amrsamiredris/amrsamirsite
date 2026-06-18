@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amr Samir Edris | Portfolio & CV</title>
+  <meta name="description" content="Portfolio of Amr Samir Edris - Project Manager, Mega Events & Large-Scale Productions. View event cases, download CV, and portfolio.">
+  <link rel="stylesheet" href="./index.css">
+</head>
+<body>
+
+  <!-- ==========================================
+       Client View
+       ========================================== -->
+  <div class="client-view-container">
+    
+    <!-- Hero Section / Contact Card -->
+    <section class="hero">
+      <div class="container">
+        <div class="contact-card glass">
+          <div class="avatar-container">ASE</div>
+          <h1 id="client-name">Amr Samir Edris</h1>
+          
+          <div class="rotating-text-wrapper">
+            <div class="rotating-text active" id="rotator-0">Project Manager</div>
+            <div class="rotating-text" id="rotator-1">Marketing Strategist</div>
+            <div class="rotating-text" id="rotator-2">AI & Tech Consultant</div>
+          </div>
+          
+          <p class="card-summary" id="client-summary">
+            Senior Project Manager delivering mega events, large-scale government productions, and digital campaigns across the MENA region.
+          </p>
+          
+          <div class="card-meta-info">
+            <div class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5A2.25 2.25 0 0 1 2.25 17.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
+              <a href="mailto:amrsamiredris@gmail.com" id="client-email">amrsamiredris@gmail.com</a>
+            </div>
+            <div class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.802-5.122-4.1-6.924-6.924l1.293-.97a1.125 1.125 0 0 0 .417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+              </svg>
+              <span id="client-phone">+971 54 219 1028</span>
+            </div>
+            <div class="meta-item">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+              </svg>
+              <a href="https://linkedin.com/in/amrsamiredris" target="_blank" id="client-linkedin">linkedin.com/in/amrsamiredris</a>
+            </div>
+          </div>
+          
+          <div class="btn-group">
+            <button class="btn btn-primary" id="btn-view-cv">
+              View CV
+            </button>
+            <a class="btn btn-secondary" id="btn-download-cv" href="#" download>
+              Download CV
+            </a>
+            <button class="btn btn-primary" id="btn-view-portfolio">
+              View Portfolio
+            </button>
+            <a class="btn btn-secondary" id="btn-download-portfolio" href="#" download>
+              Download Portfolio
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Logo Strip Section -->
+    <section class="logo-strip-section" id="brand-strip-section">
+      <div class="logo-strip-container" id="logo-marquee">
+        <!-- Will be loaded dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- PDF Viewer Sections -->
+    <section id="cv-viewer-section" class="pdf-viewer-section container section-padding">
+      <div class="pdf-header">
+        <h3 class="gradient-text">Curriculum Vitae</h3>
+        <button class="btn btn-secondary" id="btn-close-cv">Close Preview</button>
+      </div>
+      <div class="pdf-frame-container">
+        <iframe id="cv-iframe" src="" type="application/pdf"></iframe>
+      </div>
+      <div class="pdf-mobile-card glass">
+        <p>Your screen size is too small to embed the PDF directly.</p>
+        <a id="cv-mobile-link" href="#" target="_blank" class="btn btn-primary">Open CV in New Tab</a>
+      </div>
+    </section>
+
+    <section id="portfolio-viewer-section" class="pdf-viewer-section container section-padding">
+      <div class="pdf-header">
+        <h3 class="gradient-text">Event Portfolio</h3>
+        <button class="btn btn-secondary" id="btn-close-portfolio">Close Preview</button>
+      </div>
+      <div class="pdf-frame-container">
+        <iframe id="portfolio-iframe" src="" type="application/pdf"></iframe>
+      </div>
+      <div class="pdf-mobile-card glass">
+        <p>Your screen size is too small to embed the PDF directly.</p>
+        <a id="portfolio-mobile-link" href="#" target="_blank" class="btn btn-primary">Open Portfolio in New Tab</a>
+      </div>
+    </section>
+
+    <!-- Experience / Portfolio Grid -->
+    <section class="section-padding container" id="experience-section">
+      <div class="section-title-container">
+        <span class="section-tag">Case Studies</span>
+        <h2 class="section-title gradient-text">Featured Experiences</h2>
+      </div>
+
+      <div class="filters-container" id="experience-filters">
+        <button class="filter-btn active" data-filter="all">All Projects</button>
+        <button class="filter-btn" data-filter="Gaming & Esports">Gaming & Esports</button>
+        <button class="filter-btn" data-filter="Government & Cultural">Government & Cultural</button>
+        <button class="filter-btn" data-filter="Film Festivals">Film Festivals</button>
+        <button class="filter-btn" data-filter="Medical & Healthcare">Medical & Healthcare</button>
+      </div>
+
+      <div class="projects-grid" id="projects-grid">
+        <!-- Loaded dynamically from Supabase database -->
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer container">
+      <div class="footer-logo primary-gradient-text">AMR SAMIR EDRIS</div>
+      <div class="social-links">
+        <a href="mailto:amrsamiredris@gmail.com" class="social-link" id="footer-email-btn">Email</a>
+        <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="social-link" id="footer-linkedin-btn">LinkedIn</a>
+      </div>
+      <p class="footer-copy">&copy; 2026 Amr Samir Edris. All rights reserved.</p>
+    </footer>
+
+    <!-- Discreet Admin Portal Button -->
+    <a href="#admin" style="position: fixed; bottom: 16px; right: 16px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--text-muted); z-index: 50; transition: var(--transition-smooth);" title="Admin CMS Portal" id="admin-entrance-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:16px;height:16px;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+      </svg>
+    </a>
+
+  </div>
+
+  <!-- ==========================================
+       Case Study Detail Modal
+       ========================================== -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal-content glass">
+      <button class="modal-close" id="btn-close-modal">&times;</button>
+      <div class="modal-body" id="modal-body-content">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       Admin View (Login / Dashboard)
+       ========================================== -->
+  <div class="admin-view-container">
+    
+    <!-- Admin Login Panel -->
+    <div class="admin-login-wrapper" id="admin-login-panel">
+      <div class="login-card glass">
+        <div class="login-header">
+          <h2>Admin Console</h2>
+          <p>Login to edit site content and view analytics</p>
+        </div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" class="form-control" required placeholder="admin@example.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-control" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary login-btn">Log In</button>
+        </form>
+        <div style="margin-top: 16px; text-align: center;">
+          <a href="#" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">&larr; Back to Portfolio</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard (Auth Protected) -->
+    <div class="dashboard-wrapper" id="admin-dashboard-panel" style="display: none;">
+      <!-- Sidebar -->
+      <aside class="dash-sidebar">
+        <div class="sidebar-title primary-gradient-text">
+          Console
+        </div>
+        <ul class="sidebar-menu">
+          <li>
+            <button class="menu-btn active" data-target="panel-analytics">
+              Analytics
+            </button>
+          </li>
+          <li>
+            <button class="menu-btn" data-target="panel-content">
+              General Info
+            </button>
+          </li>
+          <li>
+            <button class="menu-btn" data-target="panel-experiences">
+              Experience Cards
+            </button>
+          </li>
+          <li>
+            <button class="menu-btn" data-target="panel-assets">
+              Files & Logos
+            </button>
+          </li>
+        </ul>
+        <div class="sidebar-footer">
+          <button class="menu-btn btn-danger" id="btn-logout" style="justify-content: center;">
+            Log Out
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="dash-content">
+        
+        <div class="dash-header">
+          <h2 id="panel-title">Analytics</h2>
+          <div class="meta-item">
+            <a href="#" style="font-size: 0.9rem; text-decoration: none; color: var(--accent);">&larr; View Live Site</a>
+          </div>
+        </div>
+
+        <!-- Panel 1: Analytics -->
+        <div class="dash-panel active" id="panel-analytics">
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card glass">
+              <div class="stat-header">Unique Visitors</div>
+              <div class="stat-num" id="stat-visitors">0</div>
+            </div>
+            <div class="stat-card glass">
+              <div class="stat-header">Page Views</div>
+              <div class="stat-num" id="stat-pageviews">0</div>
+            </div>
+            <div class="stat-card glass">
+              <div class="stat-header">CV View / Down</div>
+              <div class="stat-num" id="stat-cv">0 / 0</div>
+            </div>
+            <div class="stat-card glass">
+              <div class="stat-header">Port View / Down</div>
+              <div class="stat-num" id="stat-portfolio">0 / 0</div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div class="charts-grid">
+            <div class="chart-card glass">
+              <h3>Visits Over Time</h3>
+              <div class="chart-container">
+                <canvas id="chart-visits"></canvas>
+              </div>
+            </div>
+            <div class="chart-card glass">
+              <h3>Avg Stay Duration (Seconds)</h3>
+              <div class="chart-container">
+                <canvas id="chart-durations"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Visibility Table -->
+          <div class="table-card glass">
+            <h3>Visitor Stay Duration per Section</h3>
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Section Name</th>
+                  <th>Total Visual Time</th>
+                  <th>Avg Time per Session</th>
+                  <th>Visits</th>
+                </tr>
+              </thead>
+              <tbody id="table-sections-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Panel 2: General Site Content CMS -->
+        <div class="dash-panel" id="panel-content">
+          <form id="cms-general-form">
+            <div class="cms-card glass">
+              <h3>Hero Headers & Contact Info</h3>
+              <div class="form-group">
+                <label for="cms-name">Full Name</label>
+                <input type="text" id="cms-name" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="cms-titles">Rotating Job Titles (comma separated)</label>
+                <input type="text" id="cms-titles" class="form-control" placeholder="Project Manager, Marketing Strategist, AI Consultant">
+              </div>
+              <div class="form-group">
+                <label for="cms-summary">Short Professional Summary</label>
+                <textarea id="cms-summary" class="form-control" rows="3" required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="cms-email">Email Contact</label>
+                <input type="email" id="cms-email" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="cms-phone">Phone Number</label>
+                <input type="text" id="cms-phone" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="cms-linkedin">LinkedIn Profile URL</label>
+                <input type="text" id="cms-linkedin" class="form-control" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Save General Settings</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Panel 3: Experiences Manager CMS -->
+        <div class="dash-panel" id="panel-experiences">
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+            <button class="btn btn-primary" id="btn-add-experience">+ Add Experience Card</button>
+          </div>
+          
+          <div class="cms-card glass">
+            <h3>Active Project & Experience Cards</h3>
+            <div id="experiences-list-container">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+
+          <!-- Add/Edit Experience Modal (Overlay inside Admin Dashboard) -->
+          <div class="modal-overlay" id="experience-edit-modal">
+            <div class="modal-content glass" style="max-width: 600px;">
+              <button class="modal-close" id="btn-close-experience-modal">&times;</button>
+              <h3 id="exp-modal-title" style="margin-bottom: 24px; color: #fff;">Edit Experience</h3>
+              <form id="experience-form">
+                <input type="hidden" id="exp-id">
+                <div class="form-group">
+                  <label for="exp-role">Role Title</label>
+                  <input type="text" id="exp-role" class="form-control" required placeholder="Project Manager">
+                </div>
+                <div class="form-group">
+                  <label for="exp-company">Company / Client</label>
+                  <input type="text" id="exp-company" class="form-control" required placeholder="Zawaya Group">
+                </div>
+                <div class="form-group">
+                  <label for="exp-location">Location</label>
+                  <input type="text" id="exp-location" class="form-control" placeholder="Abu Dhabi, UAE">
+                </div>
+                <div class="form-group">
+                  <label for="exp-date">Date Range</label>
+                  <input type="text" id="exp-date" class="form-control" placeholder="Sep 2024 - May 2026">
+                </div>
+                <div class="form-group">
+                  <label for="exp-category">Category</label>
+                  <select id="exp-category" class="form-control">
+                    <option value="Gaming & Esports">Gaming & Esports</option>
+                    <option value="Government & Cultural">Government & Cultural</option>
+                    <option value="Film Festivals">Film Festivals</option>
+                    <option value="Medical & Healthcare">Medical & Healthcare</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="exp-description">Brief Scope/Description</label>
+                  <textarea id="exp-description" class="form-control" rows="2" placeholder="Brief 1-2 sentence summary..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="exp-details">Bullet Details (one per line)</label>
+                  <textarea id="exp-details" class="form-control" rows="4" placeholder="- Managed end-to-end coordination...&#10;- Led teams of contractors..."></textarea>
+                </div>
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div>
+                    <label for="exp-metric-1-val">Impact Metric 1 Value</label>
+                    <input type="text" id="exp-metric-1-val" class="form-control" placeholder="20+">
+                  </div>
+                  <div>
+                    <label for="exp-metric-1-lbl">Impact Metric 1 Label</label>
+                    <input type="text" id="exp-metric-1-lbl" class="form-control" placeholder="Mega Events">
+                  </div>
+                </div>
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div>
+                    <label for="exp-metric-2-val">Impact Metric 2 Value</label>
+                    <input type="text" id="exp-metric-2-val" class="form-control" placeholder="AED 5M+">
+                  </div>
+                  <div>
+                    <label for="exp-metric-2-lbl">Impact Metric 2 Label</label>
+                    <input type="text" id="exp-metric-2-lbl" class="form-control" placeholder="Revenue Generated">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Save Experience</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4: Asset Uploads & Logos -->
+        <div class="dash-panel" id="panel-assets">
+          <div class="cms-card glass">
+            <h3>Document Management</h3>
+            
+            <div style="margin-bottom: 32px;">
+              <h4 style="color: #fff; margin-bottom: 12px; font-size: 0.95rem;">Curriculum Vitae (PDF)</h4>
+              <div class="file-upload-area" id="upload-cv-area">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                </svg>
+                <p>Drag & drop or click to upload new CV PDF</p>
+                <input type="file" id="input-cv" accept="application/pdf">
+              </div>
+              <div id="cv-upload-status" class="file-upload-status"></div>
+            </div>
+
+            <div>
+              <h4 style="color: #fff; margin-bottom: 12px; font-size: 0.95rem;">Event Portfolio (PDF)</h4>
+              <div class="file-upload-area" id="upload-portfolio-area">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                </svg>
+                <p>Drag & drop or click to upload new Portfolio PDF</p>
+                <input type="file" id="input-portfolio" accept="application/pdf">
+              </div>
+              <div id="portfolio-upload-status" class="file-upload-status"></div>
+            </div>
+          </div>
+
+          <div class="cms-card glass">
+            <h3>Brand Logos Manager</h3>
+            <div style="margin-bottom: 24px;">
+              <div class="file-upload-area" id="upload-logo-area" style="padding: 20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 32px; height: 32px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                </svg>
+                <p>Upload brand logo PNG or SVG</p>
+                <input type="file" id="input-logo" accept="image/*">
+              </div>
+              <div id="logo-upload-status" class="file-upload-status"></div>
+            </div>
+            
+            <h4 style="color: #fff; margin-bottom: 12px; font-size: 0.95rem;">Active Partner Logos</h4>
+            <div id="admin-logos-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px;">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+  </div>
+
+  <script type="module" src="./supabase.js"></script>
+  <script type="module" src="./app.js"></script>
+  <script type="module" src="./admin.js"></script>
+  <script type="module" src="./tracker.js"></script>
+</body>
+</html>
