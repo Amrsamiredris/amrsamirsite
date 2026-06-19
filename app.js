@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js';
 
-// Fallback dataset pre-populated representing Amr Samir Edris's actual portfolio details
+// Fallback dataset representing Amr Samir Edris's actual portfolio details
 const FALLBACK_EXPERIENCES = [
   {
     id: "def-game-expo-2026",
@@ -56,7 +56,7 @@ const FALLBACK_EXPERIENCES = [
     role: "Event Manager",
     company: "Expo 2020 Dubai",
     location: "Dubai, UAE",
-    date_range: "Aug 2021 – Apr 2022",
+    date_range: "2021 - 2022",
     category: "Government & Cultural",
     description: "Managed end-to-end event coordination across 100+ live concerts and cultural events over six months at the world's largest Expo.",
     details: [
@@ -72,7 +72,7 @@ const FALLBACK_EXPERIENCES = [
     role: "Senior Account Manager Digital & Events",
     company: "FP7 McCann",
     location: "Cairo & Dubai",
-    date_range: "Jun 2022 – Sep 2024",
+    date_range: "2022 - 2024",
     category: "Government & Cultural",
     description: "Managed 10+ major brand accounts simultaneously, presenting strategies and performance analytics reports to C-level stakeholders.",
     details: [
@@ -88,7 +88,7 @@ const FALLBACK_EXPERIENCES = [
     role: "Event Operations Support",
     company: "El Gouna Film Festival",
     location: "El Gouna, Egypt",
-    date_range: "Multiple Editions",
+    date_range: "2021",
     category: "Film Festivals",
     description: "Supported festival-scale logistics, artist hospitality, and on-ground venue operations for one of MENA's flagship international film festivals.",
     details: [
@@ -132,13 +132,14 @@ const FALLBACK_LOGOS = [
 
 const FALLBACK_CONTENT = {
   name: "Amr Samir Edris",
-  titles: ["immersive experiences.", "large-scale productions.", "brand strategies."],
+  titles: ["immersive experiences.", "large-scale productions.", "brand campaigns."],
   summary: "Senior Project Manager with 5+ years of experience delivering mega events, large-scale government productions, and digital marketing campaigns across the MENA region.",
   email: "amrsamiredris@gmail.com",
   phone: "+971542191028",
   linkedin: "https://linkedin.com/in/amrsamiredris",
   cv_url: "",
-  portfolio_url: ""
+  portfolio_url: "",
+  status_badge: "Available for Projects"
 };
 
 // Global states
@@ -146,14 +147,19 @@ let experiences = [];
 let siteContent = {};
 let activeTitles = [];
 let rotatorTimer = null;
+let activeFilterCategory = 'all';
+let activeFilterYear = 'all';
 
 // Initializer
 document.addEventListener('DOMContentLoaded', async () => {
   setupHashRouting();
+  initializeTheme();
   await loadContent();
   await loadExperiences();
   renderLogoMarquee();
   setupInteractivity();
+  setupvCardDownloader();
+  setupTimelineSlider();
 });
 
 window.addEventListener('hashchange', setupHashRouting);
@@ -167,6 +173,31 @@ function setupHashRouting() {
     }
   } else {
     document.body.classList.remove('admin-mode');
+  }
+}
+
+// Light & Dark theme toggle controller
+function initializeTheme() {
+  const savedTheme = localStorage.getItem('apple-portfolio-theme');
+  const toggleBtn = document.getElementById('btn-theme-toggle');
+  
+  // Default to dark theme if not set
+  if (savedTheme === 'light') {
+    document.body.classList.remove('dark-theme');
+  } else {
+    document.body.classList.add('dark-theme');
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      if (document.body.classList.contains('dark-theme')) {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('apple-portfolio-theme', 'light');
+      } else {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('apple-portfolio-theme', 'dark');
+      }
+    });
   }
 }
 
@@ -204,6 +235,19 @@ async function loadContent() {
   const linkedinEl = document.getElementById('client-linkedin');
   linkedinEl.querySelector('span').textContent = siteContent.linkedin.replace('https://', '').replace('www.', '');
   linkedinEl.href = siteContent.linkedin;
+
+  // Render Availability Status badge
+  const statusBadgeVal = siteContent.status_badge || 'Available for Projects';
+  document.getElementById('status-badge-text').textContent = statusBadgeVal;
+  
+  const statusDot = document.getElementById('status-badge-dot');
+  if (statusBadgeVal === 'Fully Booked') {
+    statusDot.style.backgroundColor = '#ff3b30'; // red
+  } else if (statusBadgeVal === 'Open for Hiring') {
+    statusDot.style.backgroundColor = '#ff9500'; // orange
+  } else {
+    statusDot.style.backgroundColor = '#34c759'; // green
+  }
 
   // Setup rotating text words
   activeTitles = Array.isArray(siteContent.titles) ? siteContent.titles : siteContent.titles.split(',').map(t => t.trim());
@@ -244,17 +288,17 @@ async function setupFileLinks() {
 
 // Subtitle Rotating words controller
 function setupTitleRotator() {
-  const wrapper = document.querySelector('.rotating-words-container');
+  const wrapper = document.querySelector('.hero-rotating-wrap');
   if (!wrapper) return;
 
   wrapper.innerHTML = '';
   
   activeTitles.forEach((title, idx) => {
-    const span = document.createElement('span');
-    span.className = `rotating-word ${idx === 0 ? 'active' : ''}`;
-    span.id = `rotator-${idx}`;
-    span.textContent = title;
-    wrapper.appendChild(span);
+    const div = document.createElement('div');
+    div.className = `rotating-item ${idx === 0 ? 'active' : ''}`;
+    div.id = `rotator-${idx}`;
+    div.textContent = title;
+    wrapper.appendChild(div);
   });
 
   if (rotatorTimer) clearInterval(rotatorTimer);
@@ -264,14 +308,14 @@ function setupTitleRotator() {
   rotatorTimer = setInterval(() => {
     const activeEl = document.getElementById(`rotator-${currentIdx}`);
     if (activeEl) {
-      activeEl.className = 'rotating-word exit';
+      activeEl.className = 'rotating-item exit';
     }
     
     currentIdx = (currentIdx + 1) % activeTitles.length;
     
     const nextEl = document.getElementById(`rotator-${currentIdx}`);
     if (nextEl) {
-      nextEl.className = 'rotating-word active';
+      nextEl.className = 'rotating-item active';
     }
     
     // Clear exit state classes after transition
@@ -279,10 +323,10 @@ function setupTitleRotator() {
       activeTitles.forEach((_, idx) => {
         if (idx !== currentIdx) {
           const el = document.getElementById(`rotator-${idx}`);
-          if (el) el.className = 'rotating-word';
+          if (el) el.className = 'rotating-item';
         }
       });
-    }, 400);
+    }, 350);
     
   }, 3200);
 }
@@ -306,28 +350,45 @@ async function loadExperiences() {
     experiences = FALLBACK_EXPERIENCES;
   }
   
-  renderExperiences('all');
+  filterAndRenderExperiences();
 }
 
-// Render bento layout grid
-function renderExperiences(filter = 'all') {
+// Multi-dimensional filtering logic (Category + Year range slider)
+function filterAndRenderExperiences() {
   const grid = document.getElementById('projects-grid');
   if (!grid) return;
   
   grid.innerHTML = '';
   
-  const filtered = filter === 'all' 
-    ? experiences 
-    : experiences.filter(exp => exp.category === filter);
+  // Filter list
+  const filtered = experiences.filter(exp => {
+    // 1. Category check
+    const matchesCategory = activeFilterCategory === 'all' || exp.category === activeFilterCategory;
     
+    // 2. Year check
+    let matchesYear = true;
+    if (activeFilterYear !== 'all') {
+      // Check if project date_range covers the selected slider year
+      matchesYear = exp.date_range.includes(activeFilterYear) || 
+                    (activeFilterYear === '2023' && exp.date_range.includes('2022 - 2024')) ||
+                    (activeFilterYear === '2023' && exp.id === 'fp7-mccann-senior-manager');
+    }
+    
+    return matchesCategory && matchesYear;
+  });
+  
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 48px; color: var(--text-muted); font-size: 0.95rem;">No projects active in ${activeFilterYear} under this category.</div>`;
+    return;
+  }
+
   filtered.forEach((exp, idx) => {
     const card = document.createElement('div');
     
-    // Asymmetric Bento Grid styling distribution
-    // Alternate Span-2 and Medium sizes for a dynamic rhythm
-    let bentoClass = 'bento-card bento-card-medium';
+    // Apple Bento grid layout spans
+    let bentoClass = 'apple-bento-cell';
     if (idx === 0 || idx === 3 || idx === 6) {
-      bentoClass = 'bento-card bento-card-large bento-card-span-2';
+      bentoClass = 'apple-bento-cell apple-bento-cell-full';
     }
     
     card.className = bentoClass;
@@ -337,44 +398,35 @@ function renderExperiences(filter = 'all') {
     
     card.innerHTML = `
       <div>
-        <div class="bento-card-top">
-          <span class="bento-card-badge">${exp.category}</span>
-          <span class="bento-card-date">${exp.date_range}</span>
+        <div class="cell-header-row">
+          <span class="cell-badge">${exp.category}</span>
+          <span class="cell-date">${exp.date_range}</span>
         </div>
-        <div class="bento-card-content">
+        <div class="cell-body">
           <h3>${exp.role}</h3>
-          <div class="bento-card-company">${exp.company}</div>
-          <p class="bento-card-desc">${summaryText}</p>
+          <div class="cell-company">${exp.company}</div>
+          <p class="cell-desc">${summaryText}</p>
         </div>
       </div>
       
-      <div class="bento-card-metrics">
-        <div>
-          <div class="bento-metric-val">${exp.impact_metrics?.val1 || 'Active'}</div>
-          <div class="bento-metric-lbl">${exp.impact_metrics?.lbl1 || 'Status'}</div>
+      <div class="cell-metrics-box">
+        <div class="cell-metric-item">
+          <span class="cell-metric-number">${exp.impact_metrics?.val1 || 'Active'}</span>
+          <span class="cell-metric-name">${exp.impact_metrics?.lbl1 || 'Status'}</span>
         </div>
-        <div>
-          <div class="bento-metric-val">${exp.impact_metrics?.val2 || 'N/A'}</div>
-          <div class="bento-metric-lbl">${exp.impact_metrics?.lbl2 || 'Metric'}</div>
+        <div class="cell-metric-item">
+          <span class="cell-metric-number">${exp.impact_metrics?.val2 || 'N/A'}</span>
+          <span class="cell-metric-name">${exp.impact_metrics?.lbl2 || 'Metric'}</span>
         </div>
       </div>
     `;
-    
-    // Add Mouse Glow micro-interactions
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--x', `${x}px`);
-      card.style.setProperty('--y', `${y}px`);
-    });
     
     card.addEventListener('click', () => openDetailModal(exp));
     grid.appendChild(card);
   });
 }
 
-// Render infinite brand scrolling marquee
+// Render infinite brand marquee
 function renderLogoMarquee() {
   const marquee = document.getElementById('logo-marquee');
   if (!marquee) return;
@@ -382,15 +434,97 @@ function renderLogoMarquee() {
   marquee.innerHTML = '';
   
   const logos = FALLBACK_LOGOS;
-  // Duplicate three times for seamless visual panning loops
   const tripleLogos = [...logos, ...logos, ...logos];
   
   tripleLogos.forEach(logo => {
     const div = document.createElement('div');
-    div.className = 'brand-marquee-item';
+    div.className = 'marquee-tag';
     div.innerHTML = `<span>${logo.name}</span>`;
     marquee.appendChild(div);
   });
+}
+
+// Dynamic vCard generator and downloader
+function setupvCardDownloader() {
+  const btn = document.getElementById('btn-download-vcard');
+  if (!btn) return;
+  
+  btn.addEventListener('click', () => {
+    const vcardData = `BEGIN:VCARD
+VERSION:3.0
+N:Edris;Amr;Samir;;
+FN:Amr Samir Edris
+ORG:Zawaya Group
+TITLE:Senior Project Manager
+TEL;TYPE=CELL,VOICE:+971542191028
+EMAIL;TYPE=PREF,INTERNET:amrsamiredris@gmail.com
+URL:https://amrsamirsite.vercel.app
+ADR;TYPE=WORK:;;Dubai;;;United Arab Emirates
+END:VCARD`;
+
+    const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Amr_Samir_Edris.vcf';
+    document.body.appendChild(a);
+    a.click();
+    
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+}
+
+// Interactive Apple timeline slider
+function setupTimelineSlider() {
+  const slider = document.getElementById('timeline-range-input');
+  const sliderVal = document.getElementById('timeline-slider-val');
+  const ticksContainer = document.getElementById('timeline-ticks-container');
+  
+  if (!slider || !sliderVal || !ticksContainer) return;
+  
+  // Listen to slider shifts
+  slider.addEventListener('input', (e) => {
+    const val = e.target.value;
+    updateTimelineSelection(val);
+  });
+  
+  // Listen to label clicks
+  ticksContainer.addEventListener('click', (e) => {
+    if (e.target.classList.contains('timeline-tick-label')) {
+      const year = e.target.dataset.year;
+      
+      if (year === 'all') {
+        slider.value = 2020;
+        updateTimelineSelection(2020);
+      } else {
+        slider.value = parseInt(year);
+        updateTimelineSelection(parseInt(year));
+      }
+    }
+  });
+
+  function updateTimelineSelection(val) {
+    // Reset active tick labels
+    const labels = ticksContainer.querySelectorAll('.timeline-tick-label');
+    labels.forEach(lbl => lbl.classList.remove('active'));
+    
+    if (parseInt(val) === 2020) {
+      activeFilterYear = 'all';
+      sliderVal.textContent = 'All Operations';
+      ticksContainer.querySelector('[data-year="all"]').classList.add('active');
+    } else {
+      activeFilterYear = val.toString();
+      sliderVal.textContent = `Operations in ${val}`;
+      const matchingTick = ticksContainer.querySelector(`[data-year="${val}"]`);
+      if (matchingTick) {
+        matchingTick.classList.add('active');
+      }
+    }
+    
+    filterAndRenderExperiences();
+  }
 }
 
 // Modal popups for Case details
@@ -409,39 +543,39 @@ function openDetailModal(exp) {
   });
   
   content.innerHTML = `
-    <span class="bento-card-badge" style="display: inline-block; margin-bottom: 16px;">${exp.category}</span>
+    <span class="cell-badge" style="display: inline-block; margin-bottom: 16px;">${exp.category}</span>
     <h2>${exp.role}</h2>
-    <div class="modal-subtitle-row">
-      <span class="modal-subtitle-company">${exp.company}</span>
+    <div class="modal-metadata-line">
+      <span class="modal-company-title">${exp.company}</span>
       <span>&bull;</span>
       <span>${exp.location || ''}</span>
       <span>&bull;</span>
       <span>${exp.date_range}</span>
     </div>
     
-    <div class="modal-grid-layout">
+    <div class="modal-grid-cols">
       <div>
-        <div class="modal-section">
-          <div class="modal-section-title">Operational Scope</div>
-          <p class="modal-section-body" style="color: var(--text-secondary); line-height: 1.75;">${exp.description || ''}</p>
+        <div class="modal-content-section">
+          <div class="modal-section-eyebrow">Operational Scope</div>
+          <p class="modal-section-body" style="color: var(--text-secondary); line-height: 1.6;">${exp.description || ''}</p>
         </div>
         
-        <div class="modal-section">
-          <div class="modal-section-title">Key Execution Deliverables</div>
+        <div class="modal-content-section">
+          <div class="modal-section-eyebrow">Key Execution Deliverables</div>
           <ul class="modal-bullets-list">
             ${bulletsHtml || '<li>Owned end-to-end event planning.</li>'}
           </ul>
         </div>
       </div>
       
-      <div class="modal-sidebar-metrics">
-        <div class="modal-metric-card">
-          <div class="modal-metric-num">${exp.impact_metrics?.val1 || 'Delivered'}</div>
-          <div class="modal-metric-desc">${exp.impact_metrics?.lbl1 || 'Result'}</div>
+      <div class="modal-sidebar">
+        <div class="modal-sidebar-card">
+          <div class="modal-sidebar-card-val">${exp.impact_metrics?.val1 || 'Delivered'}</div>
+          <div class="modal-sidebar-card-lbl">${exp.impact_metrics?.lbl1 || 'Result'}</div>
         </div>
-        <div class="modal-metric-card">
-          <div class="modal-metric-num">${exp.impact_metrics?.val2 || 'Success'}</div>
-          <div class="modal-metric-desc">${exp.impact_metrics?.lbl2 || 'Metric'}</div>
+        <div class="modal-sidebar-card">
+          <div class="modal-sidebar-card-val">${exp.impact_metrics?.val2 || 'Success'}</div>
+          <div class="modal-sidebar-card-lbl">${exp.impact_metrics?.lbl2 || 'Metric'}</div>
         </div>
       </div>
     </div>
@@ -451,9 +585,9 @@ function openDetailModal(exp) {
   document.body.style.overflow = 'hidden';
 }
 
-// Global click wireframes
+// Global click listeners
 function setupInteractivity() {
-  // Category Filtering
+  // Category tags filtering
   const filters = document.getElementById('experience-filters');
   if (filters) {
     filters.addEventListener('click', (e) => {
@@ -461,13 +595,13 @@ function setupInteractivity() {
         filters.querySelectorAll('.tag-filter').forEach(btn => btn.classList.remove('active'));
         e.target.classList.add('active');
         
-        const filterVal = e.target.dataset.filter;
-        renderExperiences(filterVal);
+        activeFilterCategory = e.target.dataset.filter;
+        filterAndRenderExperiences();
       }
     });
   }
 
-  // Close Modals
+  // Close modals
   const modal = document.getElementById('detail-modal');
   const closeBtn = document.getElementById('btn-close-modal');
   if (closeBtn && modal) {
@@ -482,9 +616,9 @@ function setupInteractivity() {
     document.body.style.overflow = '';
   }
 
-  // Document slide panel drawers
-  const cvDrawer = document.getElementById('cv-viewer-section');
-  const portDrawer = document.getElementById('portfolio-viewer-section');
+  // PDF Previews toggle
+  const cvSec = document.getElementById('cv-viewer-section');
+  const portSec = document.getElementById('portfolio-viewer-section');
   
   document.getElementById('btn-view-cv').addEventListener('click', (e) => {
     const url = e.target.dataset.url;
@@ -493,13 +627,13 @@ function setupInteractivity() {
       iframe.src = url;
     }
     
-    cvDrawer.classList.add('active');
-    portDrawer.classList.remove('active');
-    cvDrawer.scrollIntoView({ behavior: 'smooth' });
+    cvSec.classList.add('active');
+    portSec.classList.remove('active');
+    cvSec.scrollIntoView({ behavior: 'smooth' });
   });
 
   document.getElementById('btn-close-cv').addEventListener('click', () => {
-    cvDrawer.classList.remove('active');
+    cvSec.classList.remove('active');
     document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
   });
 
@@ -510,13 +644,13 @@ function setupInteractivity() {
       iframe.src = url;
     }
     
-    portDrawer.classList.add('active');
-    cvDrawer.classList.remove('active');
-    portDrawer.scrollIntoView({ behavior: 'smooth' });
+    portSec.classList.add('active');
+    cvSec.classList.remove('active');
+    portSec.scrollIntoView({ behavior: 'smooth' });
   });
 
   document.getElementById('btn-close-portfolio').addEventListener('click', () => {
-    portDrawer.classList.remove('active');
+    portSec.classList.remove('active');
     document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
   });
 }

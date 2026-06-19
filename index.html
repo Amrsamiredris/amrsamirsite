@@ -7,7 +7,7 @@
   <meta name="description" content="Portfolio of Amr Samir Edris. Senior Project Manager delivering mega events, cultural productions, and brand campaigns in the MENA region. View case credentials and download PDFs.">
   <link rel="stylesheet" href="./index.css">
 </head>
-<body>
+<body class="dark-theme"> <!-- Default to Obsidian Dark mode -->
 
   <!-- ==========================================
        Client View
@@ -20,13 +20,19 @@
         <a href="#" class="logo-link">
           AMR SAMIR EDRIS <span class="logo-dot"></span>
         </a>
-        <nav>
-          <ul class="nav-menu">
-            <li><a href="#experience-section" class="nav-link">Selected Work</a></li>
-            <li><a href="#documents-cabinet" class="nav-link">Documents</a></li>
-            <li><a href="#admin" class="nav-link">Console</a></li>
-          </ul>
-        </nav>
+        <div class="nav-right-wrap">
+          <nav>
+            <ul class="nav-menu">
+              <li><a href="#experience-section" class="nav-link">Selected Work</a></li>
+              <li><a href="#documents-cabinet" class="nav-link">Documents</a></li>
+              <li><a href="#admin" class="nav-link">Console</a></li>
+            </ul>
+          </nav>
+          <!-- Apple sliding theme toggle -->
+          <button class="theme-switch-btn" id="btn-theme-toggle" aria-label="Toggle theme">
+            <span class="theme-switch-indicator"></span>
+          </button>
+        </div>
       </div>
     </header>
     
@@ -34,75 +40,107 @@
     <section class="hero">
       <div class="container hero-grid">
         <div class="hero-content">
-          <div class="hero-eyebrow mono-text">Event Director & Project Lead</div>
-          <h1 class="hero-title">Amr Samir Edris</h1>
-          <div class="hero-subtitle">
-            Delivering mega events, digital marketing, and 
-            <div class="rotating-words-container">
-              <span class="rotating-word active" id="rotator-0">immersive experiences.</span>
-              <span class="rotating-word" id="rotator-1">large-scale productions.</span>
-              <span class="rotating-word" id="rotator-2">brand strategies.</span>
+          <!-- Availability Glowing Status Badge -->
+          <div style="display: flex;">
+            <div class="status-badge-wrap" id="status-badge-container">
+              <span class="status-dot glowing" id="status-badge-dot"></span>
+              <span id="status-badge-text">Available for Projects</span>
             </div>
           </div>
+
+          <h1 class="hero-title">Amr Samir Edris</h1>
+          
+          <div class="hero-rotating-wrap">
+            <div class="rotating-item active" id="rotator-0">immersive experiences.</div>
+            <div class="rotating-item" id="rotator-1">large-scale productions.</div>
+            <div class="rotating-item" id="rotator-2">brand campaigns.</div>
+          </div>
+
           <p class="hero-bio" id="client-summary">
             Over 5 years of experience leading cross-functional teams, budget allocations, and contractor operations for high-profile MENA activations including COP28, Expo 2020 Dubai, and major gaming arenas.
           </p>
-          <div class="action-grid" style="display: flex; gap: 16px; margin-top: 12px;">
-            <a href="#experience-section" class="btn-premium btn-premium-solid">Selected Projects</a>
-            <a href="#documents-cabinet" class="btn-premium btn-premium-outline">Access Portfolio Docs</a>
+          
+          <div style="display: flex; gap: 12px;">
+            <a href="#experience-section" class="btn-apple btn-apple-solid">Selected Work</a>
+            <a href="#documents-cabinet" class="btn-apple btn-apple-outline">Credentials Cabinet</a>
           </div>
         </div>
         
-        <!-- Contact Card Bento -->
-        <div class="hero-card">
-          <div class="hero-card-header">
-            <h3 class="hero-card-title">Vital Credentials</h3>
-            <p style="font-size: 0.85rem; color: var(--text-secondary);">Direct connection & meta-data</p>
+        <!-- Contact Card widget -->
+        <div class="widget-bento-card">
+          <div class="widget-header">
+            <h3 class="widget-title">Vital Credentials</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Direct contacts & metadata</p>
           </div>
-          <div class="hero-card-meta">
-            <div class="hero-meta-item">
+          <div class="widget-meta-list" style="margin-bottom: 24px;">
+            <div class="widget-meta-row">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
               </svg>
               <span>Dubai, United Arab Emirates</span>
             </div>
-            <a href="mailto:amrsamiredris@gmail.com" class="hero-meta-item" id="client-email">
+            <a href="mailto:amrsamiredris@gmail.com" class="widget-meta-row" id="client-email">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5A2.25 2.25 0 0 1 2.25 17.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
               </svg>
               <span>amrsamiredris@gmail.com</span>
             </a>
-            <div class="hero-meta-item" id="client-phone">
+            <div class="widget-meta-row" id="client-phone">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.802-5.122-4.1-6.924-6.924l1.293-.97a1.125 1.125 0 0 0 .417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
               </svg>
               <span>+971 54 219 1028</span>
             </div>
-            <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="hero-meta-item" id="client-linkedin">
+            <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="widget-meta-row" id="client-linkedin">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
               </svg>
               <span>linkedin.com/in/amrsamiredris</span>
             </a>
           </div>
+          <!-- vCard Download -->
+          <div class="action-grid">
+            <button class="btn-apple btn-apple-solid" id="btn-download-vcard" style="width: 100%;">
+              Save Contact Card (vCard)
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Infinite Brand logo scrolling wall -->
-    <section class="brand-marquee-section" id="brand-strip-section">
-      <div class="brand-marquee-container" id="logo-marquee">
+    <!-- Infinite Brand marquee strip -->
+    <section class="marquee-strip-wall" id="brand-strip-section">
+      <div class="marquee-strip-inner" id="logo-marquee">
         <!-- Loaded dynamically in app.js -->
+      </div>
+    </section>
+
+    <!-- Career Timeline Slider Widget -->
+    <section class="timeline-slider-section container" id="timeline-filter-section">
+      <div class="timeline-slider-card">
+        <div class="timeline-slider-header">
+          <span class="timeline-slider-title">Interactive Career Timeline</span>
+          <span class="timeline-slider-val" id="timeline-slider-val">All Operations</span>
+        </div>
+        <input type="range" class="timeline-range-input" id="timeline-range-input" min="2020" max="2026" value="2020">
+        <div class="timeline-ticks" id="timeline-ticks-container">
+          <span class="timeline-tick-label active" data-year="all">All</span>
+          <span class="timeline-tick-label" data-year="2021">2021</span>
+          <span class="timeline-tick-label" data-year="2022">2022</span>
+          <span class="timeline-tick-label" data-year="2024">2024</span>
+          <span class="timeline-tick-label" data-year="2025">2025</span>
+          <span class="timeline-tick-label" data-year="2026">2026</span>
+        </div>
       </div>
     </section>
 
     <!-- Bento Grid Selected Work -->
     <section class="section-padding container" id="experience-section">
-      <div class="section-head">
-        <div class="section-eyebrow mono-text">Selected Commissions</div>
+      <div class="section-intro">
+        <div class="section-label mono-text">Selected Commissions</div>
         <h2 class="section-title">A catalog of productions, events, and brand campaigns.</h2>
-        <p class="section-desc">Filtering by category dynamically reorders the grid structure below.</p>
+        <p class="section-subtitle">Use the timeline slider above or category filters below to filter the grid.</p>
       </div>
 
       <div class="filter-tags-list" id="experience-filters">
@@ -113,75 +151,75 @@
         <button class="tag-filter" data-filter="Medical & Healthcare">Medical & Healthcare</button>
       </div>
 
-      <!-- Bento Layout -->
-      <div class="bento-grid" id="projects-grid">
+      <!-- Bento Layout Grid -->
+      <div class="apple-bento-grid" id="projects-grid">
         <!-- Rendered in app.js -->
       </div>
     </section>
 
-    <!-- Documents Cabinet Section -->
+    <!-- Documents Drawer -->
     <section class="section-padding cabinet-section" id="documents-cabinet">
       <div class="container">
-        <div class="section-head" style="text-align: center; margin: 0 auto 56px auto;">
-          <div class="section-eyebrow mono-text">Credentials Access</div>
-          <h2 class="section-title">Documents Drawer</h2>
-          <p class="section-desc" style="max-width: 50ch; margin: 0 auto;">Review directly on-site or fetch the files for printing and offline review.</p>
+        <div class="section-intro" style="text-align: center; max-width: 550px; margin: 0 auto 48px auto;">
+          <div class="section-label mono-text">Credentials Cabinet</div>
+          <h2 class="section-title">Access Documents</h2>
+          <p class="section-subtitle">Review directly in the browser or download the files for offline access.</p>
         </div>
         
         <div class="cabinet-grid">
           <!-- CV Card -->
-          <div class="cabinet-card">
+          <div class="cabinet-cell">
             <div>
               <div class="mono-text" style="margin-bottom: 12px;">File — PDF</div>
               <h3>Curriculum Vitae</h3>
               <p class="cabinet-desc">A detailed summary of professional milestones, leadership qualifications, client portfolios, and core operations management.</p>
             </div>
-            <div class="cabinet-actions">
-              <button class="btn-premium btn-premium-solid" id="btn-view-cv">Open Viewer</button>
-              <a class="btn-premium btn-premium-outline" id="btn-download-cv" href="#" download>Download File</a>
+            <div class="cabinet-buttons">
+              <button class="btn-apple btn-apple-solid" id="btn-view-cv">Open Viewer</button>
+              <a class="btn-apple btn-apple-outline" id="btn-download-cv" href="#" download>Download File</a>
             </div>
           </div>
 
           <!-- Portfolio Card -->
-          <div class="cabinet-card">
+          <div class="cabinet-cell">
             <div>
               <div class="mono-text" style="margin-bottom: 12px;">File — PDF</div>
               <h3>Event Portfolio</h3>
               <p class="cabinet-desc">Visual summaries, event scope metrics, crew organization layouts, and photographic case reviews of large-scale activations.</p>
             </div>
-            <div class="cabinet-actions">
-              <button class="btn-premium btn-premium-solid" id="btn-view-portfolio">Open Viewer</button>
-              <a class="btn-premium btn-premium-outline" id="btn-download-portfolio" href="#" download>Download File</a>
+            <div class="cabinet-buttons">
+              <button class="btn-apple btn-apple-solid" id="btn-view-portfolio">Open Viewer</button>
+              <a class="btn-apple btn-apple-outline" id="btn-download-portfolio" href="#" download>Download File</a>
             </div>
           </div>
         </div>
 
-        <!-- Dynamic Document View (Hidden by default, slides down) -->
-        <div id="cv-viewer-section" class="document-slide-view" style="margin-top: 48px;">
-          <div class="slide-header">
+        <!-- Dynamic inline viewers -->
+        <div id="cv-viewer-section" class="cabinet-viewer-wrap" style="margin-top: 32px;">
+          <div class="viewer-header-row">
             <h3>Curriculum Vitae</h3>
-            <button class="btn-premium btn-premium-outline" id="btn-close-cv">Close Drawer</button>
+            <button class="btn-apple btn-apple-outline" id="btn-close-cv">Close Drawer</button>
           </div>
-          <div class="slide-frame-wrap">
+          <div class="viewer-frame-box">
             <iframe id="cv-iframe" src="" type="application/pdf"></iframe>
           </div>
-          <div class="slide-mobile-fallback glass">
-            <p style="margin-bottom: 16px;">This viewport cannot stream inline documents.</p>
-            <a id="cv-mobile-link" href="#" target="_blank" class="btn-premium btn-premium-solid">Open Document Stream</a>
+          <div class="viewer-fallback-mobile">
+            <p style="margin-bottom: 16px; color: var(--text-secondary);">Mobile screens do not support inline PDF viewers.</p>
+            <a id="cv-mobile-link" href="#" target="_blank" class="btn-apple btn-apple-solid">View PDF in New Tab</a>
           </div>
         </div>
 
-        <div id="portfolio-viewer-section" class="document-slide-view" style="margin-top: 48px;">
-          <div class="slide-header">
+        <div id="portfolio-viewer-section" class="cabinet-viewer-wrap" style="margin-top: 32px;">
+          <div class="viewer-header-row">
             <h3>Event Portfolio</h3>
-            <button class="btn-premium btn-premium-outline" id="btn-close-portfolio">Close Drawer</button>
+            <button class="btn-apple btn-apple-outline" id="btn-close-portfolio">Close Drawer</button>
           </div>
-          <div class="slide-frame-wrap">
+          <div class="viewer-frame-box">
             <iframe id="portfolio-iframe" src="" type="application/pdf"></iframe>
           </div>
-          <div class="slide-mobile-fallback glass">
-            <p style="margin-bottom: 16px;">This viewport cannot stream inline documents.</p>
-            <a id="portfolio-mobile-link" href="#" target="_blank" class="btn-premium btn-premium-solid">Open Document Stream</a>
+          <div class="viewer-fallback-mobile">
+            <p style="margin-bottom: 16px; color: var(--text-secondary);">Mobile screens do not support inline PDF viewers.</p>
+            <a id="portfolio-mobile-link" href="#" target="_blank" class="btn-apple btn-apple-solid">View PDF in New Tab</a>
           </div>
         </div>
       </div>
@@ -189,12 +227,19 @@
 
     <!-- Footer -->
     <footer class="footer container">
-      <div class="footer-logo">AMR SAMIR EDRIS</div>
-      <div class="footer-socials">
-        <a href="mailto:amrsamiredris@gmail.com" class="footer-link" id="footer-email-btn">Email</a>
-        <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="footer-link" id="footer-linkedin-btn">LinkedIn</a>
+      <div class="footer-brand">AMR SAMIR EDRIS</div>
+      <div class="footer-nav-list">
+        <a href="mailto:amrsamiredris@gmail.com" class="footer-nav-link" id="footer-email-btn">Email</a>
+        <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="footer-nav-link" id="footer-linkedin-btn">LinkedIn</a>
       </div>
     </footer>
+
+    <!-- Discreet login button -->
+    <a href="#admin" class="admin-login-corner-btn" title="Admin Console" id="admin-entrance-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 14px; height: 14px;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+      </svg>
+    </a>
 
   </div>
 
@@ -216,25 +261,25 @@
   <div class="admin-view-container">
     
     <!-- Login Form -->
-    <div class="login-panel-wrap" id="admin-login-panel">
-      <div class="login-box">
-        <div class="login-title">
+    <div class="login-wrap-panel" id="admin-login-panel">
+      <div class="login-widget">
+        <div class="login-widget-head">
           <h2>Console Entry</h2>
-          <p>Provide keys to connect database & CMS editors</p>
+          <p>Login to connect databases and CMS settings</p>
         </div>
         <form id="login-form">
-          <div class="form-block">
+          <div class="input-block-row">
             <label for="login-email">Security ID (Email)</label>
-            <input type="email" id="login-email" class="input-field" required placeholder="admin@example.com">
+            <input type="email" id="login-email" class="text-input-field" required placeholder="admin@example.com">
           </div>
-          <div class="form-block">
+          <div class="input-block-row">
             <label for="login-password">Access Code (Password)</label>
-            <input type="password" id="login-password" class="input-field" required placeholder="••••••••">
+            <input type="password" id="login-password" class="text-input-field" required placeholder="••••••••">
           </div>
-          <button type="submit" class="btn-premium btn-premium-solid btn-submit">Authorize Session</button>
+          <button type="submit" class="btn-apple btn-apple-solid btn-login-submit">Authorize Session</button>
         </form>
-        <div style="margin-top: 24px; text-align: center;">
-          <a href="#" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: none; font-family: var(--font-mono); text-transform: uppercase;">&larr; Return to Workspace</a>
+        <div style="margin-top: 20px; text-align: center;">
+          <a href="#" style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none; font-family: var(--font-mono); text-transform: uppercase;">&larr; Back to Workspace</a>
         </div>
       </div>
     </div>
@@ -264,7 +309,7 @@
           </li>
           <li>
             <button class="sidebar-nav-btn" data-target="panel-assets">
-              Files & Logos
+              Files & Webhooks
             </button>
           </li>
         </ul>
@@ -276,8 +321,8 @@
       </aside>
 
       <!-- Main Dashboard view -->
-      <main class="dashboard-panel-view">
-        <div class="dashboard-panel-header">
+      <main class="console-panel-view">
+        <div class="console-panel-header">
           <h2 id="panel-title">Analytics</h2>
           <div>
             <a href="#" style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; text-decoration: none; color: var(--accent);">&larr; Return to Live Site</a>
@@ -285,46 +330,46 @@
         </div>
 
         <!-- Panel 1: Analytics -->
-        <div class="dashboard-tab-panel active" id="panel-analytics">
-          <div class="stat-cards-grid">
-            <div class="stat-metric-card">
-              <div class="stat-card-eyebrow">Unique Visitors</div>
-              <div class="stat-card-value" id="stat-visitors">0</div>
+        <div class="console-tab-panel active" id="panel-analytics">
+          <div class="console-kpi-grid">
+            <div class="console-kpi-card">
+              <div class="console-kpi-eyebrow">Unique Visitors</div>
+              <div class="console-kpi-val" id="stat-visitors">0</div>
             </div>
-            <div class="stat-metric-card">
-              <div class="stat-card-eyebrow">Page Views</div>
-              <div class="stat-card-value" id="stat-pageviews">0</div>
+            <div class="console-kpi-card">
+              <div class="console-kpi-eyebrow">Page Views</div>
+              <div class="console-kpi-val" id="stat-pageviews">0</div>
             </div>
-            <div class="stat-metric-card">
-              <div class="stat-card-eyebrow">CV View / Down</div>
-              <div class="stat-card-value" id="stat-cv">0 / 0</div>
+            <div class="console-kpi-card">
+              <div class="console-kpi-eyebrow">CV View / Down</div>
+              <div class="console-kpi-val" id="stat-cv">0 / 0</div>
             </div>
-            <div class="stat-metric-card">
-              <div class="stat-card-eyebrow">Port View / Down</div>
-              <div class="stat-card-value" id="stat-portfolio">0 / 0</div>
+            <div class="console-kpi-card">
+              <div class="console-kpi-eyebrow">Port View / Down</div>
+              <div class="console-kpi-val" id="stat-portfolio">0 / 0</div>
             </div>
           </div>
 
-          <!-- Charts Layout -->
-          <div class="panel-charts-layout">
-            <div class="canvas-chart-card">
+          <!-- Charts -->
+          <div class="console-charts-grid">
+            <div class="console-chart-card">
               <h3>Visits Progression (Days)</h3>
-              <div class="canvas-chart-box">
+              <div class="console-chart-box">
                 <canvas id="chart-visits"></canvas>
               </div>
             </div>
-            <div class="canvas-chart-card">
+            <div class="console-chart-card">
               <h3>Avg Visual Stay Time (Seconds)</h3>
-              <div class="canvas-chart-box">
+              <div class="console-chart-box">
                 <canvas id="chart-durations"></canvas>
               </div>
             </div>
           </div>
 
-          <!-- Stay Table -->
-          <div class="admin-table-card">
+          <!-- Tables -->
+          <div class="console-table-card">
             <h3>Visual Duration logs per Section</h3>
-            <table class="admin-grid-table">
+            <table class="console-table-view">
               <thead>
                 <tr>
                   <th>Section Identifier</th>
@@ -341,46 +386,55 @@
         </div>
 
         <!-- Panel 2: General CMS -->
-        <div class="dashboard-tab-panel" id="panel-content">
+        <div class="console-tab-panel" id="panel-content">
           <form id="cms-general-form">
-            <div class="cms-panel-card">
+            <div class="console-cms-card">
               <h3>General Configuration</h3>
-              <div class="form-block">
+              <div class="input-block-row">
                 <label for="cms-name">Full Name</label>
-                <input type="text" id="cms-name" class="input-field" required>
+                <input type="text" id="cms-name" class="text-input-field" required>
               </div>
-              <div class="form-block">
+              <div class="input-block-row">
+                <label for="cms-status">Live Availability Status</label>
+                <select id="cms-status" class="text-input-field">
+                  <option value="Open for Hiring">Open for Hiring</option>
+                  <option value="Available for Projects">Available for Projects</option>
+                  <option value="Open for Consultation">Open for Consultation</option>
+                  <option value="Fully Booked">Fully Booked</option>
+                </select>
+              </div>
+              <div class="input-block-row">
                 <label for="cms-titles">Rotating Job Titles (comma separated)</label>
-                <input type="text" id="cms-titles" class="input-field" placeholder="Project Manager, Marketing Strategist, AI Consultant">
+                <input type="text" id="cms-titles" class="text-input-field" placeholder="Project Manager, Marketing Strategist, AI Consultant">
               </div>
-              <div class="form-block">
+              <div class="input-block-row">
                 <label for="cms-summary">Short Professional Summary</label>
-                <textarea id="cms-summary" class="input-field" rows="3" required></textarea>
+                <textarea id="cms-summary" class="text-input-field" rows="3" required></textarea>
               </div>
-              <div class="form-block">
+              <div class="input-block-row">
                 <label for="cms-email">Email Address</label>
-                <input type="email" id="cms-email" class="input-field" required>
+                <input type="email" id="cms-email" class="text-input-field" required>
               </div>
-              <div class="form-block">
+              <div class="input-block-row">
                 <label for="cms-phone">Phone Number</label>
-                <input type="text" id="cms-phone" class="input-field" required>
+                <input type="text" id="cms-phone" class="text-input-field" required>
               </div>
-              <div class="form-block">
+              <div class="input-block-row">
                 <label for="cms-linkedin">LinkedIn URL</label>
-                <input type="text" id="cms-linkedin" class="input-field" required>
+                <input type="text" id="cms-linkedin" class="text-input-field" required>
               </div>
-              <button type="submit" class="btn-premium btn-premium-solid">Commit Configuration</button>
+              <button type="submit" class="btn-apple btn-apple-solid" style="margin-top: 12px;">Commit Configuration</button>
             </div>
           </form>
         </div>
 
         <!-- Panel 3: Experiences CMS -->
-        <div class="dashboard-tab-panel" id="panel-experiences">
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 32px;">
-            <button class="btn-premium btn-premium-solid" id="btn-add-experience">+ Add Experience Record</button>
+        <div class="console-tab-panel" id="panel-experiences">
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+            <button class="btn-apple btn-apple-solid" id="btn-add-experience">+ Add Experience Record</button>
           </div>
           
-          <div class="cms-panel-card">
+          <div class="console-cms-card">
             <h3>Active Project Credentials</h3>
             <div id="experiences-list-container">
               <!-- Loaded dynamically in admin.js -->
@@ -389,115 +443,131 @@
 
           <!-- Experience Form overlay modal -->
           <div class="modal-overlay" id="experience-edit-modal">
-            <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-content" style="max-width: 600px;">
               <button class="modal-close" id="btn-close-experience-modal">&times;</button>
-              <h3 id="exp-modal-title" style="font-size: 1.5rem; margin-bottom: 24px; color: #fff;">Edit Project</h3>
+              <h3 id="exp-modal-title" style="font-size: 1.3rem; margin-bottom: 20px; color: #fff;">Edit Project</h3>
               <form id="experience-form">
                 <input type="hidden" id="exp-id">
-                <div class="form-block">
+                <div class="input-block-row">
                   <label for="exp-role">Role Title</label>
-                  <input type="text" id="exp-role" class="input-field" required>
+                  <input type="text" id="exp-role" class="text-input-field" required>
                 </div>
-                <div class="form-block">
+                <div class="input-block-row">
                   <label for="exp-company">Company / Client</label>
-                  <input type="text" id="exp-company" class="input-field" required>
+                  <input type="text" id="exp-company" class="text-input-field" required>
                 </div>
-                <div class="form-block">
+                <div class="input-block-row">
                   <label for="exp-location">Location</label>
-                  <input type="text" id="exp-location" class="input-field">
+                  <input type="text" id="exp-location" class="text-input-field">
                 </div>
-                <div class="form-block">
+                <div class="input-block-row">
                   <label for="exp-date">Date Range</label>
-                  <input type="text" id="exp-date" class="input-field">
+                  <input type="text" id="exp-date" class="text-input-field">
                 </div>
-                <div class="form-block">
+                <div class="input-block-row">
                   <label for="exp-category">Category</label>
-                  <select id="exp-category" class="input-field">
+                  <select id="exp-category" class="text-input-field">
                     <option value="Gaming & Esports">Gaming & Esports</option>
                     <option value="Government & Cultural">Government & Cultural</option>
                     <option value="Film Festivals">Film Festivals</option>
                     <option value="Medical & Healthcare">Medical & Healthcare</option>
                   </select>
                 </div>
-                <div class="form-block">
+                <div class="input-block-row">
                   <label for="exp-description">Brief Scope/Description</label>
-                  <textarea id="exp-description" class="input-field" rows="2"></textarea>
+                  <textarea id="exp-description" class="text-input-field" rows="2"></textarea>
                 </div>
-                <div class="form-block">
+                <div class="input-block-row">
                   <label for="exp-details">Bullet Details (one per line)</label>
-                  <textarea id="exp-details" class="input-field" rows="4"></textarea>
+                  <textarea id="exp-details" class="text-input-field" rows="4"></textarea>
                 </div>
-                <div class="form-block" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="input-block-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                   <div>
                     <label for="exp-metric-1-val">Impact Metric 1 Value</label>
-                    <input type="text" id="exp-metric-1-val" class="input-field">
+                    <input type="text" id="exp-metric-1-val" class="text-input-field">
                   </div>
                   <div>
                     <label for="exp-metric-1-lbl">Impact Metric 1 Label</label>
-                    <input type="text" id="exp-metric-1-lbl" class="input-field">
+                    <input type="text" id="exp-metric-1-lbl" class="text-input-field">
                   </div>
                 </div>
-                <div class="form-block" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="input-block-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                   <div>
                     <label for="exp-metric-2-val">Impact Metric 2 Value</label>
-                    <input type="text" id="exp-metric-2-val" class="input-field">
+                    <input type="text" id="exp-metric-2-val" class="text-input-field">
                   </div>
                   <div>
                     <label for="exp-metric-2-lbl">Impact Metric 2 Label</label>
-                    <input type="text" id="exp-metric-2-lbl" class="input-field">
+                    <input type="text" id="exp-metric-2-lbl" class="text-input-field">
                   </div>
                 </div>
-                <button type="submit" class="btn-premium btn-premium-solid" style="width: 100%; margin-top: 16px;">Save Card</button>
+                <button type="submit" class="btn-apple btn-apple-solid" style="width: 100%; margin-top: 16px;">Save Card</button>
               </form>
             </div>
           </div>
         </div>
 
-        <!-- Panel 4: Assets Storage CMS -->
+        <!-- Panel 4: Assets & Webhooks CMS -->
         <div class="dashboard-tab-panel" id="panel-assets">
-          <div class="cms-panel-card">
+          <div class="console-cms-card">
             <h3>Document Repository</h3>
             
-            <div style="margin-bottom: 32px;">
-              <h4 style="color: #fff; margin-bottom: 12px; font-size: 0.95rem;">Curriculum Vitae (PDF)</h4>
-              <div class="dropbox-zone" id="upload-cv-area">
+            <div style="margin-bottom: 24px;">
+              <h4 style="color: var(--text-primary); margin-bottom: 8px; font-size: 0.88rem;">Curriculum Vitae (PDF)</h4>
+              <div class="console-dropbox" id="upload-cv-area">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
                 </svg>
-                <p>Upload new PDF to replace active CV file</p>
+                <p style="font-size:0.8rem;">Upload new PDF to replace active CV file</p>
                 <input type="file" id="input-cv" accept="application/pdf">
               </div>
-              <div id="cv-upload-status" class="upload-indicator"></div>
+              <div id="cv-upload-status" class="console-upload-status"></div>
             </div>
 
             <div>
-              <h4 style="color: #fff; margin-bottom: 12px; font-size: 0.95rem;">Event Portfolio (PDF)</h4>
-              <div class="dropbox-zone" id="upload-portfolio-area">
+              <h4 style="color: var(--text-primary); margin-bottom: 8px; font-size: 0.88rem;">Event Portfolio (PDF)</h4>
+              <div class="console-dropbox" id="upload-portfolio-area">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
                 </svg>
-                <p>Upload new PDF to replace active Portfolio file</p>
+                <p style="font-size:0.8rem;">Upload new PDF to replace active Portfolio file</p>
                 <input type="file" id="input-portfolio" accept="application/pdf">
               </div>
-              <div id="portfolio-upload-status" class="upload-indicator"></div>
+              <div id="portfolio-upload-status" class="console-upload-status"></div>
             </div>
           </div>
 
-          <div class="cms-panel-card">
+          <!-- Vercel Deployment Webhook Card -->
+          <div class="console-cms-card">
+            <h3>Vercel Integration</h3>
+            <form id="vercel-hook-form">
+              <div class="input-block-row">
+                <label for="vercel-hook-input">Vercel Deploy Hook URL</label>
+                <input type="url" id="vercel-hook-input" class="text-input-field" placeholder="https://api.vercel.com/v1/integrations/deploy/...">
+              </div>
+              <div style="display: flex; gap: 12px; align-items: center; margin-top: 16px;">
+                <button type="submit" class="btn-apple btn-apple-outline">Save Hook URL</button>
+                <button type="button" class="btn-apple btn-apple-solid" id="btn-trigger-redeploy" disabled>Trigger Production Redeploy</button>
+              </div>
+            </form>
+            <div id="vercel-deploy-status" class="console-upload-status"></div>
+          </div>
+
+          <div class="console-cms-card">
             <h3>Brand Logos Configuration</h3>
-            <div style="margin-bottom: 32px;">
-              <div class="dropbox-zone" id="upload-logo-area" style="padding: 24px;">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" style="width: 32px; height: 32px;">
+            <div style="margin-bottom: 24px;">
+              <div class="console-dropbox" id="upload-logo-area" style="padding: 16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" style="width: 24px; height: 24px;">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
                 </svg>
-                <p>Drop new brand image (PNG/SVG) to append to logo marquee</p>
+                <p style="font-size:0.8rem;">Drop new brand image (PNG/SVG) to append to logo marquee</p>
                 <input type="file" id="input-logo" accept="image/*">
               </div>
-              <div id="logo-upload-status" class="upload-indicator"></div>
+              <div id="logo-upload-status" class="console-upload-status"></div>
             </div>
             
-            <h4 style="color: #fff; margin-bottom: 16px; font-size: 0.95rem;">Active Partner Marks</h4>
-            <div id="admin-logos-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px;">
+            <h4 style="color: var(--text-primary); margin-bottom: 12px; font-size: 0.88rem;">Active Partner Marks</h4>
+            <div id="admin-logos-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px;">
               <!-- Loaded dynamically in admin.js -->
             </div>
           </div>

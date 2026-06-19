@@ -1,6 +1,6 @@
 # Amr Samir Edris — Portfolio & Event Director Workspace
 
-A high-end, premium, editorial-style single-page application (SPA) portfolio website for Amr Samir Edris, event project manager and digital marketing strategist. 
+A high-end, premium, single-page application (SPA) portfolio website for Amr Samir Edris (event project manager and digital marketing strategist), redesigned according to **Apple Design Guidelines**.
 
 Built with Vanilla HTML/CSS/JS bundled by Vite, connected to Supabase for CMS content management and custom analytics tracking, and deployed to Vercel.
 
@@ -28,5 +28,5 @@ npm run build
 ```
 
 ## Setup Guides
-* See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed database tables, storage bucketing, and security policy queries.
+* See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for database tables, storage bucketing, and security policy queries.
 * See [FEATURES.md](FEATURES.md) for a comprehensive visual and functional feature list.

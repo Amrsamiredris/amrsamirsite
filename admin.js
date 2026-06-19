@@ -6,6 +6,7 @@ let activeTab = 'panel-analytics';
 let visitsChart = null;
 let durationsChart = null;
 let currentExperiences = [];
+let vercelHookUrl = '';
 
 // Expose routing function for app.js hash router
 window.initializeAdminPanel = checkAuthAndInit;
@@ -78,6 +79,18 @@ function setupAdminListeners() {
   if (logoInput) {
     logoInput.addEventListener('change', (e) => uploadLogo(e.target.files[0]));
   }
+
+  // Vercel Webhook form submit
+  const vercelForm = document.getElementById('vercel-hook-form');
+  if (vercelForm) {
+    vercelForm.addEventListener('submit', saveVercelHook);
+  }
+
+  // Vercel trigger redeploy button click
+  const triggerRedeployBtn = document.getElementById('btn-trigger-redeploy');
+  if (triggerRedeployBtn) {
+    triggerRedeployBtn.addEventListener('click', triggerVercelRedeploy);
+  }
 }
 
 // Authenticate session and render views
@@ -100,6 +113,7 @@ async function checkAuthAndInit() {
       loadGeneralSettingsCMS();
       loadExperiencesCMS();
       loadAssetsCMS();
+      loadVercelSettings();
     } else {
       // User is not authenticated
       loginPanel.style.display = 'flex';
@@ -136,7 +150,7 @@ async function handleLogin(e) {
 // Terminate auth session
 async function handleLogout() {
   try {
-    await supabase.signOut();
+    await supabase.auth.signOut();
     window.location.hash = '';
     await checkAuthAndInit();
   } catch (err) {
@@ -159,7 +173,7 @@ function switchTab(panelId) {
   });
 
   // Toggle visible panels
-  const panels = document.querySelectorAll('.dashboard-tab-panel');
+  const panels = document.querySelectorAll('.console-tab-panel');
   panels.forEach(p => {
     if (p.id === panelId) {
       p.classList.add('active');
@@ -238,9 +252,15 @@ function renderVisitsChart(events) {
 
   if (visitsChart) visitsChart.destroy();
 
-  // Premium Linear-style chart configs
-  Chart.defaults.font.family = 'Outfit, sans-serif';
-  Chart.defaults.color = '#a1a1aa';
+  // Dynamic Theme Styling configurations for Chart
+  const isDark = document.body.classList.contains('dark-theme');
+  const textColor = isDark ? '#86868b' : '#515154';
+  const gridColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+  const accentColor = isDark ? '#2997ff' : '#0071e3';
+  const accentGlow = isDark ? 'rgba(41, 151, 255, 0.03)' : 'rgba(0, 113, 227, 0.02)';
+
+  Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  Chart.defaults.color = textColor;
 
   visitsChart = new Chart(ctx, {
     type: 'line',
@@ -249,12 +269,12 @@ function renderVisitsChart(events) {
       datasets: [{
         label: 'Views',
         data: datasetValues.length > 0 ? datasetValues : [0],
-        borderColor: '#2e62f6',
-        backgroundColor: 'rgba(46, 98, 246, 0.03)',
+        borderColor: accentColor,
+        backgroundColor: accentGlow,
         borderWidth: 2,
         fill: true,
-        tension: 0.35,
-        pointBackgroundColor: '#2e62f6',
+        tension: 0.3,
+        pointBackgroundColor: accentColor,
         pointHoverBackgroundColor: '#fff'
       }]
     },
@@ -267,11 +287,11 @@ function renderVisitsChart(events) {
       scales: {
         y: { 
           beginAtZero: true, 
-          grid: { color: 'rgba(255,255,255,0.03)' },
+          grid: { color: gridColor },
           border: { dash: [4, 4] }
         },
         x: { 
-          grid: { color: 'rgba(255,255,255,0.03)' },
+          grid: { color: gridColor },
           border: { dash: [4, 4] }
         }
       }
@@ -300,6 +320,10 @@ function renderDurationsChart(events) {
 
   if (durationsChart) durationsChart.destroy();
 
+  const isDark = document.body.classList.contains('dark-theme');
+  const accentColor = isDark ? '#2997ff' : '#0071e3';
+  const gridColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+
   durationsChart = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -307,10 +331,9 @@ function renderDurationsChart(events) {
       datasets: [{
         label: 'Seconds',
         data: averagesList.length > 0 ? averagesList : [0],
-        backgroundColor: 'rgba(46, 98, 246, 0.85)',
-        hoverBackgroundColor: '#2e62f6',
-        borderRadius: 6,
-        barThickness: 24
+        backgroundColor: accentColor,
+        borderRadius: 4,
+        barThickness: 20
       }]
     },
     options: {
@@ -322,7 +345,7 @@ function renderDurationsChart(events) {
       scales: {
         y: { 
           beginAtZero: true, 
-          grid: { color: 'rgba(255,255,255,0.03)' },
+          grid: { color: gridColor },
           border: { dash: [4, 4] }
         },
         x: { 
@@ -392,6 +415,7 @@ async function loadGeneralSettingsCMS() {
     });
 
     document.getElementById('cms-name').value = siteSettings.name || '';
+    document.getElementById('cms-status').value = siteSettings.status_badge || 'Available for Projects';
     
     const titlesArray = siteSettings.titles || [];
     document.getElementById('cms-titles').value = Array.isArray(titlesArray) ? titlesArray.join(', ') : titlesArray;
@@ -412,6 +436,7 @@ async function saveGeneralSettings(e) {
   btn.textContent = 'Saving configuration...';
 
   const nameVal = document.getElementById('cms-name').value;
+  const statusVal = document.getElementById('cms-status').value;
   const titlesList = document.getElementById('cms-titles').value.split(',').map(t => t.trim());
   const summaryVal = document.getElementById('cms-summary').value;
   const emailVal = document.getElementById('cms-email').value;
@@ -420,6 +445,7 @@ async function saveGeneralSettings(e) {
 
   const payloads = [
     { key: 'name', value: nameVal },
+    { key: 'status_badge', value: statusVal },
     { key: 'titles', value: titlesList },
     { key: 'summary', value: summaryVal },
     { key: 'email', value: emailVal },
@@ -471,22 +497,22 @@ async function loadExperiencesCMS() {
 
     container.innerHTML = '';
     if (list.length === 0) {
-      container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No active cards. Click Add above to create.</p>';
+      container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No active cards. Click Add above to create.</p>';
       return;
     }
 
     list.forEach(exp => {
       const row = document.createElement('div');
-      row.className = 'cms-list-row';
+      row.className = 'console-cms-list-row';
       
       row.innerHTML = `
         <div>
           <h4>${exp.role} @ ${exp.company}</h4>
           <p>${exp.category} | ${exp.date_range}</p>
         </div>
-        <div class="cms-row-controls">
-          <button class="btn-premium btn-premium-outline btn-mini btn-edit" data-id="${exp.id}">Edit</button>
-          <button class="btn-premium btn-mini-danger btn-mini btn-delete" data-id="${exp.id}">Delete</button>
+        <div class="console-row-actions">
+          <button class="btn-apple btn-apple-outline btn-mini-action btn-edit" data-id="${exp.id}">Edit</button>
+          <button class="btn-apple btn-mini-action-danger btn-mini-action btn-delete" data-id="${exp.id}">Delete</button>
         </div>
       `;
 
@@ -497,7 +523,7 @@ async function loadExperiencesCMS() {
     });
 
   } catch (err) {
-    container.innerHTML = `<p style="color: #ef4444; font-size: 0.9rem;">Load Failure: ${err.message}</p>`;
+    container.innerHTML = `<p style="color: #ef4444; font-size: 0.85rem;">Load Failure: ${err.message}</p>`;
   }
 }
 
@@ -611,8 +637,85 @@ async function deleteExperience(id) {
 }
 
 // ==========================================================================
-// Assets CMS Logic
+// Assets & Vercel Webhook CMS Logic
 // ==========================================================================
+async function loadVercelSettings() {
+  try {
+    if (!supabase) return;
+    
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('*')
+      .eq('key', 'vercel_hook')
+      .single();
+      
+    if (!error && data) {
+      vercelHookUrl = data.value;
+      document.getElementById('vercel-hook-input').value = vercelHookUrl;
+      document.getElementById('btn-trigger-redeploy').disabled = !vercelHookUrl;
+    }
+  } catch (err) {
+    console.log('No vercel hook configured yet.');
+  }
+}
+
+async function saveVercelHook(e) {
+  e.preventDefault();
+  const input = document.getElementById('vercel-hook-input').value.trim();
+  
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    const { error } = await supabase
+      .from('site_content')
+      .upsert({ key: 'vercel_hook', value: input }, { onConflict: 'key' });
+      
+    if (error) throw error;
+    
+    vercelHookUrl = input;
+    document.getElementById('btn-trigger-redeploy').disabled = !vercelHookUrl;
+    
+    const statusEl = document.getElementById('vercel-deploy-status');
+    statusEl.textContent = 'Deploy hook URL saved successfully!';
+    statusEl.style.color = '#34c759'; // Green
+  } catch (err) {
+    alert('Failed to save webhook URL: ' + err.message);
+  }
+}
+
+// Trigger production rebuild in Vercel
+async function triggerVercelRedeploy() {
+  if (!vercelHookUrl) return;
+  
+  const statusEl = document.getElementById('vercel-deploy-status');
+  const btn = document.getElementById('btn-trigger-redeploy');
+  
+  statusEl.textContent = 'Triggering production rebuild...';
+  statusEl.style.color = 'var(--accent)';
+  btn.disabled = true;
+
+  try {
+    // Call Vercel deploy hook POST endpoint directly from client browser
+    const response = await fetch(vercelHookUrl, {
+      method: 'POST'
+    });
+    
+    if (response.ok) {
+      statusEl.textContent = 'Build webhook triggered successfully! Vercel is compiling...';
+      statusEl.style.color = '#34c759'; // Green
+    } else {
+      throw new Error(`Server returned status: ${response.status}`);
+    }
+  } catch (err) {
+    statusEl.textContent = 'Failed to trigger rebuild: ' + err.message;
+    statusEl.style.color = '#ff3b30'; // Red
+  } finally {
+    setTimeout(() => {
+      btn.disabled = false;
+    }, 5000);
+  }
+}
+
 async function loadAssetsCMS() {
   const container = document.getElementById('admin-logos-list');
   if (!container) return;
@@ -627,7 +730,7 @@ async function loadAssetsCMS() {
     
     container.innerHTML = '';
     if (!files || files.length === 0) {
-      container.innerHTML = '<p style="color: var(--text-muted); grid-column: span 4; font-size: 0.9rem;">No custom marks uploaded yet.</p>';
+      container.innerHTML = '<p style="color: var(--text-muted); grid-column: span 4; font-size: 0.82rem;">No custom marks uploaded yet.</p>';
       return;
     }
 
@@ -637,19 +740,18 @@ async function loadAssetsCMS() {
       const fileUrl = supabase.storage.from('assets').getPublicUrl(`logos/${file.name}`).data.publicUrl;
       
       const card = document.createElement('div');
-      card.className = 'bento-card';
-      card.style.padding = '16px';
-      card.style.textAlign = 'center';
-      card.style.gap = '12px';
+      card.className = 'console-cms-list-row';
+      card.style.padding = '12px';
       card.style.display = 'flex';
       card.style.flexDirection = 'column';
       card.style.alignItems = 'center';
+      card.style.gap = '8px';
       
       card.innerHTML = `
-        <div style="height: 48px; display: flex; align-items: center; justify-content: center;">
-          <span style="font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; opacity: 0.85;">${file.name}</span>
+        <div style="height: 36px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500;">${file.name}</span>
         </div>
-        <button class="btn-premium btn-mini-danger btn-mini" style="width: 100%;" data-name="${file.name}">
+        <button class="btn-apple btn-mini-action-danger btn-mini-action" style="width: 100%;" data-name="${file.name}">
           Delete
         </button>
       `;
@@ -659,7 +761,7 @@ async function loadAssetsCMS() {
     });
 
   } catch (err) {
-    container.innerHTML = `<p style="color: #ef4444; grid-column: span 4; font-size: 0.9rem;">Listing Fail: ${err.message}</p>`;
+    container.innerHTML = `<p style="color: #ff3b30; grid-column: span 4; font-size: 0.82rem;">Listing Fail: ${err.message}</p>`;
   }
 }
 
@@ -681,10 +783,10 @@ async function uploadAsset(file, bucketFilename, statusElId) {
     if (error) throw error;
     
     statusIndicator.textContent = 'Upload complete! Live file updated.';
-    statusIndicator.style.color = 'var(--accent-hover)';
+    statusIndicator.style.color = '#34c759'; // Green
   } catch (err) {
     statusIndicator.textContent = 'Upload failed: ' + err.message;
-    statusIndicator.style.color = '#ef4444';
+    statusIndicator.style.color = '#ff3b30'; // Red
   }
 }
 
@@ -709,12 +811,12 @@ async function uploadLogo(file) {
     if (error) throw error;
     
     statusIndicator.textContent = 'Mark added successfully!';
-    statusIndicator.style.color = 'var(--accent-hover)';
+    statusIndicator.style.color = '#34c759'; // Green
     
     loadAssetsCMS();
   } catch (err) {
     statusIndicator.textContent = 'Upload failed: ' + err.message;
-    statusIndicator.style.color = '#ef4444';
+    statusIndicator.style.color = '#ff3b30'; // Red
   }
 }
 
