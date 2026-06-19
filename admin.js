@@ -357,9 +357,9 @@ async function handleLogin(e) {
   submitBtn.textContent = 'Verifying Credentials...';
 
   try {
-    if (email === 'amr123' && password === 'amr123') {
+    if (email === 'amr' && password === 'amr') {
       localStorage.setItem('admin_role', 'superadmin');
-      localStorage.setItem('admin_email', 'amr123');
+      localStorage.setItem('admin_email', 'amr');
       await checkAuthAndInit();
       return;
     }
@@ -445,7 +445,7 @@ function switchTab(panelId) {
     'panel-team': 'Team & Invites',
     'panel-approvals': 'Approvals Queue'
   };
-  document.getElementById('panel-title').textContent = headingTitles[panelId] || 'Console';
+  document.getElementById('panel-title').textContent = headingTitles[panelId] || 'Admin Panel';
 }
 
 // Helper to submit change requests for confirmation workflow
@@ -730,7 +730,7 @@ async function loadTeamCMS() {
 
     const ownerTr = document.createElement('tr');
     ownerTr.innerHTML = `
-      <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); font-weight: 500; color: var(--text-primary);">amr123 (Owner)</td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); font-weight: 500; color: var(--text-primary);">amr (Owner)</td>
       <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);"><span class="badge-role superadmin">Super Admin</span></td>
       <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);"><span style="color: #30d158; font-weight:500;">Active</span></td>
       <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); text-align: right; color: var(--text-muted); font-size: 0.75rem;">System Account</td>
