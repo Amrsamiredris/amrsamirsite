@@ -113,7 +113,10 @@ function setupClickTracking() {
     { id: 'client-phone', type: 'click_phone', label: 'Hero Phone' },
     { id: 'client-linkedin', type: 'click_linkedin', label: 'Hero LinkedIn' },
     { id: 'footer-email-btn', type: 'click_email', label: 'Footer Email' },
-    { id: 'footer-linkedin-btn', type: 'click_linkedin', label: 'Footer LinkedIn' }
+    { id: 'footer-linkedin-btn', type: 'click_linkedin', label: 'Footer LinkedIn' },
+    { id: 'btn-download-vcard', type: 'click_vcard', label: 'vCard Download' },
+    { id: 'btn-qr-download-vcard', type: 'click_vcard', label: 'QR vCard Download' },
+    { id: 'btn-show-qr', type: 'click_qr_modal', label: 'Show QR Code' }
   ];
 
   trackMap.forEach(item => {

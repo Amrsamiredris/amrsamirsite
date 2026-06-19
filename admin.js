@@ -7,6 +7,17 @@ let visitsChart = null;
 let durationsChart = null;
 let currentExperiences = [];
 let vercelHookUrl = '';
+let siteContent = {};
+let currentPitches = [];
+
+const FALLBACK_CREW = [
+  { id: "1", role: "Project Director", name: "Amr Samir Edris", level: 1 },
+  { id: "2", role: "Event Ops Manager", name: "Sarah Collins", level: 2 },
+  { id: "3", role: "Technical Director", name: "Marcus Vance", level: 2 },
+  { id: "4", role: "Stage Manager", name: "Elena Rostova", level: 3 },
+  { id: "5", role: "Backstage Lead", name: "Tariq Mahmood", level: 3 },
+  { id: "6", role: "Logistics Lead", name: "Yuki Tanaka", level: 3 }
+];
 
 // Expose routing function for app.js hash router
 window.initializeAdminPanel = checkAuthAndInit;
@@ -83,6 +94,7 @@ function setupAdminListeners() {
   // Vercel Webhook form submit
   const vercelForm = document.getElementById('vercel-hook-form');
   if (vercelForm) {
+    generalForm ? null : null; // sanity check
     vercelForm.addEventListener('submit', saveVercelHook);
   }
 
@@ -90,6 +102,49 @@ function setupAdminListeners() {
   const triggerRedeployBtn = document.getElementById('btn-trigger-redeploy');
   if (triggerRedeployBtn) {
     triggerRedeployBtn.addEventListener('click', triggerVercelRedeploy);
+  }
+
+  // CSV Exporter button
+  const exportBtn = document.getElementById('btn-export-csv');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportAnalyticsToCSV);
+  }
+
+  // Calendar save button
+  const saveCalBtn = document.getElementById('btn-save-calendar');
+  if (saveCalBtn) {
+    saveCalBtn.addEventListener('click', saveCalendarStatus);
+  }
+
+  // Crew Structure actions
+  const addCrewBtn = document.getElementById('btn-add-crew-node');
+  if (addCrewBtn) {
+    addCrewBtn.addEventListener('click', () => {
+      const currentCrew = getCrewFromCMSInputs();
+      currentCrew.push({ id: String(currentCrew.length + 1), role: '', name: '', level: 3 });
+      renderCrewCMS(currentCrew);
+    });
+  }
+
+  const saveCrewBtn = document.getElementById('btn-save-crew');
+  if (saveCrewBtn) {
+    saveCrewBtn.addEventListener('click', saveCrewStructure);
+  }
+
+  // Pitches actions
+  const addPitchBtn = document.getElementById('btn-add-pitch');
+  if (addPitchBtn) {
+    addPitchBtn.addEventListener('click', () => openPitchModal(null));
+  }
+
+  const closePitchModalBtn = document.getElementById('btn-close-pitch-modal');
+  if (closePitchModalBtn) {
+    closePitchModalBtn.addEventListener('click', closePitchModal);
+  }
+
+  const pitchForm = document.getElementById('pitch-form');
+  if (pitchForm) {
+    pitchForm.addEventListener('submit', savePitch);
   }
 }
 
@@ -173,7 +228,7 @@ function switchTab(panelId) {
   });
 
   // Toggle visible panels
-  const panels = document.querySelectorAll('.console-tab-panel');
+  const panels = document.querySelectorAll('.console-tab-panel, .dashboard-tab-panel');
   panels.forEach(p => {
     if (p.id === panelId) {
       p.classList.add('active');
@@ -187,7 +242,8 @@ function switchTab(panelId) {
     'panel-analytics': 'Analytics Overview',
     'panel-content': 'General Profile Settings',
     'panel-experiences': 'Experience Registry',
-    'panel-assets': 'Document & Media Assets'
+    'panel-assets': 'Document & Media Assets',
+    'panel-pitches': 'Curated Client Pitches'
   };
   document.getElementById('panel-title').textContent = headingTitles[panelId] || 'Console';
 }
@@ -413,6 +469,8 @@ async function loadGeneralSettingsCMS() {
     data.forEach(item => {
       siteSettings[item.key] = item.value;
     });
+    
+    siteContent = siteSettings; // Save globally in admin.js
 
     document.getElementById('cms-name').value = siteSettings.name || '';
     document.getElementById('cms-status').value = siteSettings.status_badge || 'Available for Projects';
@@ -424,6 +482,11 @@ async function loadGeneralSettingsCMS() {
     document.getElementById('cms-email').value = siteSettings.email || '';
     document.getElementById('cms-phone').value = siteSettings.phone || '';
     document.getElementById('cms-linkedin').value = siteSettings.linkedin || '';
+    
+    // Chain-load interactive features panels
+    loadCalendarCMS();
+    loadCrewCMSInit();
+    loadPitchesCMS();
   } catch (err) {
     console.warn('CMS general config initialization failed:', err.message);
   }
@@ -541,6 +604,7 @@ function openExperienceModal(exp = null) {
     document.getElementById('exp-date').value = exp.date_range;
     document.getElementById('exp-category').value = exp.category;
     document.getElementById('exp-description').value = exp.description || '';
+    document.getElementById('exp-budget').value = exp.budget_usd || 0;
     
     const detailsTxt = Array.isArray(exp.details) ? exp.details.join('\n') : exp.details;
     document.getElementById('exp-details').value = detailsTxt || '';
@@ -553,6 +617,7 @@ function openExperienceModal(exp = null) {
     modalHeading.textContent = 'Add Experience Card';
     document.getElementById('experience-form').reset();
     document.getElementById('exp-id').value = '';
+    document.getElementById('exp-budget').value = 0;
   }
 
   modal.classList.add('active');
@@ -572,6 +637,7 @@ async function saveExperience(e) {
   const dateVal = document.getElementById('exp-date').value;
   const catVal = document.getElementById('exp-category').value;
   const descVal = document.getElementById('exp-description').value;
+  const budgetVal = parseFloat(document.getElementById('exp-budget').value) || 0;
   
   const detailsList = document.getElementById('exp-details').value
     .split('\n')
@@ -590,6 +656,7 @@ async function saveExperience(e) {
     date_range: dateVal,
     category: catVal,
     description: descVal,
+    budget_usd: budgetVal,
     details: detailsList,
     impact_metrics: { val1: metricVal1, lbl1: metricLbl1, val2: metricVal2, lbl2: metricLbl2 }
   };
@@ -833,5 +900,400 @@ async function deleteLogo(filename) {
     loadAssetsCMS();
   } catch (err) {
     alert('Removal request failed: ' + err.message);
+  }
+}
+
+// ==========================================================================
+// Calendar Availability CMS Logic
+// ==========================================================================
+function getUpcomingMonths() {
+  const months = [];
+  const d = new Date();
+  for (let i = 0; i < 4; i++) {
+    const next = new Date(d.getFullYear(), d.getMonth() + i, 1);
+    const label = next.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    months.push(label);
+  }
+  return months;
+}
+
+function loadCalendarCMS() {
+  const container = document.getElementById('cms-calendar-months');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  const months = getUpcomingMonths();
+  const dbStatus = siteContent.calendar_status || {};
+  
+  months.forEach(month => {
+    const status = dbStatus[month] || 'Available';
+    const div = document.createElement('div');
+    div.style.display = 'flex';
+    div.style.justifyContent = 'space-between';
+    div.style.alignItems = 'center';
+    div.style.marginBottom = '10px';
+    div.style.borderBottom = '1px solid var(--border-color)';
+    div.style.paddingBottom = '8px';
+    
+    div.innerHTML = `
+      <span style="font-size: 0.88rem; font-weight: 500; color: #fff;">${month}</span>
+      <select class="text-input-field cms-calendar-select" data-month="${month}" style="width: 140px; margin-bottom: 0; padding: 6px 12px;">
+        <option value="Available" ${status === 'Available' ? 'selected' : ''}>Available</option>
+        <option value="Fully Booked" ${status === 'Fully Booked' ? 'selected' : ''}>Fully Booked</option>
+        <option value="Tentative" ${status === 'Tentative' ? 'selected' : ''}>Tentative</option>
+      </select>
+    `;
+    container.appendChild(div);
+  });
+}
+
+async function saveCalendarStatus() {
+  const container = document.getElementById('cms-calendar-months');
+  if (!container) return;
+  
+  const selects = container.querySelectorAll('.cms-calendar-select');
+  const statusObj = {};
+  
+  selects.forEach(sel => {
+    statusObj[sel.dataset.month] = sel.value;
+  });
+  
+  const saveBtn = document.getElementById('btn-save-calendar');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+  
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    const { error } = await supabase
+      .from('site_content')
+      .upsert({ key: 'calendar_status', value: statusObj }, { onConflict: 'key' });
+      
+    if (error) throw error;
+    alert('Calendar availability saved successfully!');
+  } catch (err) {
+    alert('Failed to save calendar status: ' + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Calendar Status';
+  }
+}
+
+// ==========================================================================
+// Crew Structure CMS Logic
+// ==========================================================================
+function loadCrewCMSInit() {
+  const crew = siteContent.crew_structure || FALLBACK_CREW;
+  renderCrewCMS(crew);
+}
+
+function renderCrewCMS(crew) {
+  const container = document.getElementById('cms-crew-members-container');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  
+  crew.forEach((node, idx) => {
+    const div = document.createElement('div');
+    div.className = 'cms-crew-node-row';
+    div.style.display = 'flex';
+    div.style.gap = '10px';
+    div.style.alignItems = 'center';
+    
+    div.innerHTML = `
+      <input type="text" class="text-input-field role-input" style="flex: 2; margin-bottom: 0;" placeholder="Role (e.g. Stage Manager)" value="${node.role || ''}" required>
+      <input type="text" class="text-input-field name-input" style="flex: 2; margin-bottom: 0;" placeholder="Name (e.g. Elena)" value="${node.name || ''}" required>
+      <select class="text-input-field level-select" style="flex: 1; margin-bottom: 0; padding: 10px 8px;">
+        <option value="1" ${parseInt(node.level) === 1 ? 'selected' : ''}>Lvl 1 (Top)</option>
+        <option value="2" ${parseInt(node.level) === 2 ? 'selected' : ''}>Lvl 2 (Mid)</option>
+        <option value="3" ${parseInt(node.level) === 3 ? 'selected' : ''}>Lvl 3 (Base)</option>
+      </select>
+      <button type="button" class="btn-apple btn-mini-action-danger btn-delete-crew-node" style="padding: 10px 14px;" data-idx="${idx}">&times;</button>
+    `;
+    
+    div.querySelector('.btn-delete-crew-node').addEventListener('click', () => {
+      const currentCrew = getCrewFromCMSInputs();
+      currentCrew.splice(idx, 1);
+      renderCrewCMS(currentCrew);
+    });
+    
+    container.appendChild(div);
+  });
+}
+
+function getCrewFromCMSInputs() {
+  const container = document.getElementById('cms-crew-members-container');
+  if (!container) return [];
+  
+  const rows = container.querySelectorAll('.cms-crew-node-row');
+  const crew = [];
+  
+  rows.forEach((row, idx) => {
+    const role = row.querySelector('.role-input').value.trim();
+    const name = row.querySelector('.name-input').value.trim();
+    const level = parseInt(row.querySelector('.level-select').value) || 3;
+    
+    crew.push({ id: String(idx + 1), role, name, level });
+  });
+  
+  return crew;
+}
+
+async function saveCrewStructure() {
+  const crew = getCrewFromCMSInputs();
+  const saveBtn = document.getElementById('btn-save-crew');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+  
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    const { error } = await supabase
+      .from('site_content')
+      .upsert({ key: 'crew_structure', value: crew }, { onConflict: 'key' });
+      
+    if (error) throw error;
+    alert('Crew structure saved successfully!');
+  } catch (err) {
+    alert('Failed to save crew structure: ' + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Crew Structure';
+  }
+}
+
+// ==========================================================================
+// Curated Client Pitches CMS Logic
+// ==========================================================================
+async function loadPitchesCMS() {
+  const container = document.getElementById('pitches-list-container');
+  if (!container) return;
+
+  container.innerHTML = 'Retrieving pitches...';
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('*')
+      .eq('key', 'pitches')
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    
+    currentPitches = (data && data.value) ? data.value : [];
+
+    container.innerHTML = '';
+    if (currentPitches.length === 0) {
+      container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">No active client pitches. Click Create above to generate one.</p>';
+      return;
+    }
+
+    currentPitches.forEach((pitch, idx) => {
+      const row = document.createElement('div');
+      row.className = 'console-cms-list-row';
+      
+      const shareUrl = `${window.location.origin}/#pitch/${pitch.slug}`;
+      
+      row.innerHTML = `
+        <div style="flex: 1; min-width: 0;">
+          <h4 style="margin: 0 0 4px 0; color: #fff; font-size: 0.92rem;">${pitch.title}</h4>
+          <p style="margin: 0 0 8px 0; font-size: 0.75rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+            Route: <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: var(--accent);">${shareUrl}</code>
+          </p>
+          <p style="margin: 0; font-size: 0.72rem; color: var(--text-muted);">${pitch.project_ids ? pitch.project_ids.length : 0} projects selected</p>
+        </div>
+        <div class="console-row-actions">
+          <button class="btn-apple btn-apple-outline btn-mini-action btn-copy-link" data-url="${shareUrl}">Copy Link</button>
+          <button class="btn-apple btn-apple-outline btn-mini-action btn-edit-pitch" data-idx="${idx}">Edit</button>
+          <button class="btn-apple btn-mini-action-danger btn-mini-action btn-delete-pitch" data-idx="${idx}">Delete</button>
+        </div>
+      `;
+
+      row.querySelector('.btn-copy-link').addEventListener('click', (e) => {
+        navigator.clipboard.writeText(e.target.dataset.url);
+        e.target.textContent = 'Copied!';
+        setTimeout(() => { e.target.textContent = 'Copy Link'; }, 2000);
+      });
+
+      row.querySelector('.btn-edit-pitch').addEventListener('click', () => openPitchModal(pitch, idx));
+      row.querySelector('.btn-delete-pitch').addEventListener('click', () => deletePitch(idx));
+
+      container.appendChild(row);
+    });
+
+  } catch (err) {
+    container.innerHTML = `<p style="color: #ef4444; font-size: 0.85rem;">Load Failure: ${err.message}</p>`;
+  }
+}
+
+function openPitchModal(pitch = null, index = null) {
+  const modal = document.getElementById('pitch-edit-modal');
+  const form = document.getElementById('pitch-form');
+  const title = document.getElementById('pitch-modal-title');
+  const selector = document.getElementById('pitch-projects-selector');
+  
+  if (!modal || !form || !selector) return;
+
+  selector.innerHTML = '';
+  if (currentExperiences.length === 0) {
+    selector.innerHTML = '<p style="color: var(--text-muted); font-size: 0.8rem; margin:0;">No projects available. Create projects first.</p>';
+  } else {
+    currentExperiences.forEach(exp => {
+      const isChecked = pitch && pitch.project_ids && pitch.project_ids.includes(exp.id);
+      const div = document.createElement('div');
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.gap = '8px';
+      div.style.marginBottom = '6px';
+      
+      div.innerHTML = `
+        <input type="checkbox" id="pitch-proj-${exp.id}" class="pitch-project-checkbox" value="${exp.id}" ${isChecked ? 'checked' : ''}>
+        <label for="pitch-proj-${exp.id}" style="font-size: 0.82rem; color: #eee; cursor: pointer; user-select: none;">${exp.role} @ ${exp.company}</label>
+      `;
+      selector.appendChild(div);
+    });
+  }
+
+  if (pitch) {
+    title.textContent = 'Edit Curated Pitch';
+    document.getElementById('pitch-id').value = index !== null ? index : '';
+    document.getElementById('pitch-title').value = pitch.title;
+    document.getElementById('pitch-slug').value = pitch.slug;
+    document.getElementById('pitch-greeting').value = pitch.greeting;
+  } else {
+    title.textContent = 'Create Curated Pitch Link';
+    form.reset();
+    document.getElementById('pitch-id').value = '';
+  }
+
+  modal.classList.add('active');
+}
+
+function closePitchModal() {
+  const modal = document.getElementById('pitch-edit-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+async function savePitch(e) {
+  e.preventDefault();
+  
+  const indexVal = document.getElementById('pitch-id').value;
+  const titleVal = document.getElementById('pitch-title').value.trim();
+  const slugVal = document.getElementById('pitch-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+  const greetingVal = document.getElementById('pitch-greeting').value.trim();
+  
+  const checkedCheckboxes = document.querySelectorAll('.pitch-project-checkbox:checked');
+  const projectIds = Array.from(checkedCheckboxes).map(cb => cb.value);
+
+  const payload = {
+    title: titleVal,
+    slug: slugVal,
+    greeting: greetingVal,
+    project_ids: projectIds
+  };
+
+  const newPitches = [...currentPitches];
+  if (indexVal !== '') {
+    newPitches[parseInt(indexVal)] = payload;
+  } else {
+    if (newPitches.some(p => p.slug === slugVal)) {
+      alert('A pitch link with this slug already exists. Please choose a different slug.');
+      return;
+    }
+    newPitches.push(payload);
+  }
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    const { error } = await supabase
+      .from('site_content')
+      .upsert({ key: 'pitches', value: newPitches }, { onConflict: 'key' });
+
+    if (error) throw error;
+    
+    closePitchModal();
+    loadPitchesCMS();
+  } catch (err) {
+    alert('Failed to save pitch: ' + err.message);
+  }
+}
+
+async function deletePitch(index) {
+  if (!confirm('Are you sure you want to delete this pitch?')) return;
+
+  const newPitches = [...currentPitches];
+  newPitches.splice(index, 1);
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    const { error } = await supabase
+      .from('site_content')
+      .upsert({ key: 'pitches', value: newPitches }, { onConflict: 'key' });
+
+    if (error) throw error;
+    loadPitchesCMS();
+  } catch (err) {
+    alert('Deletion Request Failed: ' + err.message);
+  }
+}
+
+// ==========================================================================
+// CSV Analytics Exporter
+// ==========================================================================
+async function exportAnalyticsToCSV() {
+  const exportBtn = document.getElementById('btn-export-csv');
+  exportBtn.disabled = true;
+  exportBtn.textContent = 'Exporting...';
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    const { data: events, error } = await supabase
+      .from('analytics_events')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    if (!events || events.length === 0) {
+      alert('No analytics data available to export.');
+      return;
+    }
+
+    const headers = ['ID', 'Session ID', 'Event Type', 'Event Label', 'Duration (s)', 'Timestamp'];
+    const csvRows = [headers.join(',')];
+
+    events.forEach(e => {
+      const row = [
+        e.id,
+        `"${e.session_id || ''}"`,
+        `"${e.event_type || ''}"`,
+        `"${e.event_label || ''}"`,
+        e.duration || 0,
+        `"${e.created_at || ''}"`
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `amrsamirsite_analytics_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+  } catch (err) {
+    alert('Export Failed: ' + err.message);
+  } finally {
+    exportBtn.disabled = false;
+    exportBtn.textContent = 'Export logs to CSV';
   }
 }

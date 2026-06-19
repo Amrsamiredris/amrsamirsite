@@ -50,6 +50,7 @@ CREATE TABLE experiences (
   details JSONB NOT NULL,
   impact_metrics JSONB NOT NULL,
   order_index INTEGER NOT NULL,
+  budget_usd NUMERIC DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -85,6 +86,12 @@ CREATE POLICY "Allow public inserts" ON analytics_events
 -- Allow authenticated admins to view/manage analytics_events
 CREATE POLICY "Allow admin reads" ON analytics_events
   FOR ALL TO authenticated USING (true);
+```
+
+### If you already ran the first setup query:
+If you already set up the project earlier, you only need to run this single line to add the budget column:
+```sql
+ALTER TABLE experiences ADD COLUMN budget_usd NUMERIC DEFAULT 0;
 ```
 
 ---

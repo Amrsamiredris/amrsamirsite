@@ -149,17 +149,31 @@ let activeTitles = [];
 let rotatorTimer = null;
 let activeFilterCategory = 'all';
 let activeFilterYear = 'all';
+let activeFilterBudget = 0;
+let activePitch = null;
+
+const FALLBACK_CREW = [
+  { id: "1", role: "Project Director", name: "Amr Samir Edris", level: 1 },
+  { id: "2", role: "Event Ops Manager", name: "Sarah Collins", level: 2 },
+  { id: "3", role: "Technical Director", name: "Marcus Vance", level: 2 },
+  { id: "4", role: "Stage Manager", name: "Elena Rostova", level: 3 },
+  { id: "5", role: "Backstage Lead", name: "Tariq Mahmood", level: 3 },
+  { id: "6", role: "Logistics Lead", name: "Yuki Tanaka", level: 3 }
+];
 
 // Initializer
 document.addEventListener('DOMContentLoaded', async () => {
-  setupHashRouting();
   initializeTheme();
   await loadContent();
   await loadExperiences();
+  setupHashRouting();
   renderLogoMarquee();
   setupInteractivity();
-  setupvCardDownloader();
+  setupvCardAndQR();
   setupTimelineSlider();
+  setupBudgetSlider();
+  renderAvailabilityCalendar();
+  renderCrewStructure();
 });
 
 window.addEventListener('hashchange', setupHashRouting);
@@ -173,6 +187,46 @@ function setupHashRouting() {
     }
   } else {
     document.body.classList.remove('admin-mode');
+    
+    if (hash.startsWith('#pitch/')) {
+      const slug = hash.substring('#pitch/'.length);
+      const pitches = siteContent.pitches || [];
+      const pitch = pitches.find(p => p.slug === slug);
+      
+      if (pitch) {
+        activePitch = pitch;
+        const bannerContainer = document.getElementById('pitch-banner-container');
+        if (bannerContainer) {
+          bannerContainer.innerHTML = `
+            <div class="pitch-banner-card">
+              <div class="pitch-banner-content">
+                <h4>Welcome, ${pitch.title} Team</h4>
+                <p>${pitch.greeting}</p>
+              </div>
+              <button class="pitch-close-btn" id="btn-close-pitch-banner" style="font-size: 1.5rem; color: var(--text-muted);">&times;</button>
+            </div>
+          `;
+          bannerContainer.style.display = 'block';
+          
+          document.getElementById('btn-close-pitch-banner').addEventListener('click', () => {
+            activePitch = null;
+            bannerContainer.style.display = 'none';
+            window.location.hash = '';
+            filterAndRenderExperiences();
+          });
+        }
+      } else {
+        activePitch = null;
+        const bannerContainer = document.getElementById('pitch-banner-container');
+        if (bannerContainer) bannerContainer.style.display = 'none';
+      }
+    } else {
+      activePitch = null;
+      const bannerContainer = document.getElementById('pitch-banner-container');
+      if (bannerContainer) bannerContainer.style.display = 'none';
+    }
+    
+    filterAndRenderExperiences();
   }
 }
 
@@ -353,7 +407,7 @@ async function loadExperiences() {
   filterAndRenderExperiences();
 }
 
-// Multi-dimensional filtering logic (Category + Year range slider)
+// Multi-dimensional filtering logic (Category + Year range slider + Budget Scale)
 function filterAndRenderExperiences() {
   const grid = document.getElementById('projects-grid');
   if (!grid) return;
@@ -362,23 +416,34 @@ function filterAndRenderExperiences() {
   
   // Filter list
   const filtered = experiences.filter(exp => {
+    // Pitch Mode check
+    if (activePitch && activePitch.project_ids) {
+      if (!activePitch.project_ids.includes(exp.id)) {
+        return false;
+      }
+    }
+    
     // 1. Category check
     const matchesCategory = activeFilterCategory === 'all' || exp.category === activeFilterCategory;
     
     // 2. Year check
     let matchesYear = true;
     if (activeFilterYear !== 'all') {
-      // Check if project date_range covers the selected slider year
       matchesYear = exp.date_range.includes(activeFilterYear) || 
                     (activeFilterYear === '2023' && exp.date_range.includes('2022 - 2024')) ||
                     (activeFilterYear === '2023' && exp.id === 'fp7-mccann-senior-manager');
     }
     
-    return matchesCategory && matchesYear;
+    // 3. Budget check
+    const budgetLimit = activeFilterBudget;
+    const expBudget = parseFloat(exp.budget_usd) || 0;
+    const matchesBudget = expBudget >= budgetLimit;
+    
+    return matchesCategory && matchesYear && matchesBudget;
   });
   
   if (filtered.length === 0) {
-    grid.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 48px; color: var(--text-muted); font-size: 0.95rem;">No projects active in ${activeFilterYear} under this category.</div>`;
+    grid.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 48px; color: var(--text-muted); font-size: 0.95rem;">No projects active matching these criteria.</div>`;
     return;
   }
 
@@ -444,24 +509,118 @@ function renderLogoMarquee() {
   });
 }
 
-// Dynamic vCard generator and downloader
-function setupvCardDownloader() {
-  const btn = document.getElementById('btn-download-vcard');
-  if (!btn) return;
+// Helper to compute months dynamically
+function getUpcomingMonths() {
+  const months = [];
+  const d = new Date();
+  for (let i = 0; i < 4; i++) {
+    const next = new Date(d.getFullYear(), d.getMonth() + i, 1);
+    const label = next.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    months.push(label);
+  }
+  return months;
+}
+
+// Render live availability calendar
+function renderAvailabilityCalendar() {
+  const grid = document.getElementById('calendar-widget-grid');
+  if (!grid) return;
   
-  btn.addEventListener('click', () => {
-    const vcardData = `BEGIN:VCARD
+  grid.innerHTML = '';
+  const months = getUpcomingMonths();
+  const dbStatus = siteContent.calendar_status || {};
+  
+  months.forEach(month => {
+    const status = dbStatus[month] || 'Available';
+    const statusClass = status.toLowerCase().replace(' ', '-');
+    let cssClass = 'available';
+    if (statusClass.includes('booked')) cssClass = 'booked';
+    else if (statusClass.includes('tentative')) cssClass = 'tentative';
+    
+    const item = document.createElement('div');
+    item.className = `calendar-month-item ${cssClass}`;
+    item.innerHTML = `
+      <div class="calendar-month-name">${month}</div>
+      <div class="calendar-month-status">${status}</div>
+    `;
+    grid.appendChild(item);
+  });
+}
+
+// Render Crew hierarchy tree chart
+function renderCrewStructure() {
+  const root = document.getElementById('crew-tree-root');
+  if (!root) return;
+  
+  root.innerHTML = '';
+  const crew = siteContent.crew_structure || FALLBACK_CREW;
+  
+  // Group by level
+  const levels = {};
+  crew.forEach(node => {
+    const lvl = parseInt(node.level) || 3;
+    if (!levels[lvl]) levels[lvl] = [];
+    levels[lvl].push(node);
+  });
+  
+  // Sort levels ascending
+  const sortedLevelKeys = Object.keys(levels).sort((a, b) => a - b);
+  
+  sortedLevelKeys.forEach((lvlKey, idx) => {
+    const levelDiv = document.createElement('div');
+    levelDiv.className = 'crew-tree-level';
+    if (idx > 0) {
+      levelDiv.classList.add('crew-tree-level-children');
+    }
+    
+    levels[lvlKey].forEach(node => {
+      const nodeDiv = document.createElement('div');
+      nodeDiv.className = 'crew-tree-node';
+      nodeDiv.innerHTML = `
+        <div class="crew-node-role">${node.role}</div>
+        <div class="crew-node-name">${node.name}</div>
+      `;
+      levelDiv.appendChild(nodeDiv);
+    });
+    
+    root.appendChild(levelDiv);
+  });
+}
+
+// Dynamic vCard generator and QR modal handler
+function setupvCardAndQR() {
+  const downloadBtn = document.getElementById('btn-download-vcard');
+  const qrDownloadBtn = document.getElementById('btn-qr-download-vcard');
+  const showQrBtn = document.getElementById('btn-show-qr');
+  const closeQrBtn = document.getElementById('btn-close-qr-modal');
+  const qrModal = document.getElementById('qr-modal');
+  const qrImg = document.getElementById('qr-code-img');
+  
+  function getVCardContent() {
+    const name = siteContent.name || 'Amr Samir Edris';
+    const email = siteContent.email || 'amrsamiredris@gmail.com';
+    const phone = siteContent.phone || '+971542191028';
+    const linkedin = siteContent.linkedin || 'https://linkedin.com/in/amrsamiredris';
+    
+    const nameParts = name.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    
+    return `BEGIN:VCARD
 VERSION:3.0
-N:Edris;Amr;Samir;;
-FN:Amr Samir Edris
+N:${lastName};${firstName};;;
+FN:${name}
 ORG:Zawaya Group
 TITLE:Senior Project Manager
-TEL;TYPE=CELL,VOICE:+971542191028
-EMAIL;TYPE=PREF,INTERNET:amrsamiredris@gmail.com
-URL:https://amrsamirsite.vercel.app
-ADR;TYPE=WORK:;;Dubai;;;United Arab Emirates
+TEL;TYPE=CELL,VOICE:${phone}
+EMAIL;TYPE=PREF,INTERNET:${email}
+URL:${window.location.origin}
+X-SOCIALPROFILE;TYPE=linkedin:${linkedin}
 END:VCARD`;
-
+  }
+  
+  function triggerDownload() {
+    const vcardData = getVCardContent();
     const blob = new Blob([vcardData], { type: 'text/vcard;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     
@@ -473,7 +632,41 @@ END:VCARD`;
     
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  });
+  }
+  
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', triggerDownload);
+  }
+  
+  if (qrDownloadBtn) {
+    qrDownloadBtn.addEventListener('click', triggerDownload);
+  }
+  
+  if (showQrBtn && qrModal && qrImg) {
+    showQrBtn.addEventListener('click', () => {
+      const vcard = getVCardContent();
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(vcard)}`;
+      qrImg.src = qrUrl;
+      qrModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+  }
+  
+  if (closeQrBtn && qrModal) {
+    closeQrBtn.addEventListener('click', () => {
+      qrModal.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  }
+  
+  if (qrModal) {
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) {
+        qrModal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  }
 }
 
 // Interactive Apple timeline slider
@@ -492,9 +685,9 @@ function setupTimelineSlider() {
   
   // Listen to label clicks
   ticksContainer.addEventListener('click', (e) => {
-    if (e.target.classList.contains('timeline-tick-label')) {
-      const year = e.target.dataset.year;
-      
+    const tick = e.target.closest('.timeline-tick-label');
+    if (tick) {
+      const year = tick.dataset.year;
       if (year === 'all') {
         slider.value = 2020;
         updateTimelineSelection(2020);
@@ -527,6 +720,61 @@ function setupTimelineSlider() {
   }
 }
 
+// Budget Filter Slider
+function setupBudgetSlider() {
+  const slider = document.getElementById('budget-range-input');
+  const sliderVal = document.getElementById('budget-slider-val');
+  const ticksContainer = document.getElementById('budget-ticks-container');
+  
+  if (!slider || !sliderVal || !ticksContainer) return;
+  
+  slider.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    updateBudgetSelection(val);
+  });
+  
+  ticksContainer.addEventListener('click', (e) => {
+    const tick = e.target.closest('.timeline-tick-label');
+    if (tick) {
+      const budget = parseFloat(tick.dataset.budget);
+      slider.value = budget;
+      updateBudgetSelection(budget);
+    }
+  });
+
+  function updateBudgetSelection(val) {
+    const labels = ticksContainer.querySelectorAll('.timeline-tick-label');
+    labels.forEach(lbl => lbl.classList.remove('active'));
+    
+    activeFilterBudget = val;
+    
+    // Find closest tick label to highlight
+    let closestTick = null;
+    let minDiff = Infinity;
+    labels.forEach(lbl => {
+      const tickVal = parseFloat(lbl.dataset.budget);
+      const diff = Math.abs(tickVal - val);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestTick = lbl;
+      }
+    });
+    if (closestTick) {
+      closestTick.classList.add('active');
+    }
+
+    if (val === 0) {
+      sliderVal.textContent = 'Show All Budgets';
+    } else if (val >= 10) {
+      sliderVal.textContent = 'Mega Budgets (>$10M USD)';
+    } else {
+      sliderVal.textContent = `Budgets >$${val}M USD`;
+    }
+    
+    filterAndRenderExperiences();
+  }
+}
+
 // Modal popups for Case details
 function openDetailModal(exp) {
   const modal = document.getElementById('detail-modal');
@@ -551,6 +799,7 @@ function openDetailModal(exp) {
       <span>${exp.location || ''}</span>
       <span>&bull;</span>
       <span>${exp.date_range}</span>
+      ${parseFloat(exp.budget_usd) > 0 ? `<span>&bull;</span> <span>$${exp.budget_usd}M Budget</span>` : ''}
     </div>
     
     <div class="modal-grid-cols">

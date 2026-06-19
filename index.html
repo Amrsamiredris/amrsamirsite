@@ -25,6 +25,7 @@
             <ul class="nav-menu">
               <li><a href="#experience-section" class="nav-link">Selected Work</a></li>
               <li><a href="#documents-cabinet" class="nav-link">Documents</a></li>
+              <li><a href="#crew-section" class="nav-link">Operations Tree</a></li>
               <li><a href="#admin" class="nav-link">Console</a></li>
             </ul>
           </nav>
@@ -35,6 +36,11 @@
         </div>
       </div>
     </header>
+
+    <!-- Client Pitch Welcome Banner (Rendered dynamically) -->
+    <div id="pitch-banner-container" class="container" style="display: none; margin-top: 80px; margin-bottom: -40px;">
+      <!-- Content rendered in app.js -->
+    </div>
     
     <!-- Hero Section -->
     <section class="hero">
@@ -70,7 +76,14 @@
         <div class="widget-bento-card">
           <div class="widget-header">
             <h3 class="widget-title">Vital Credentials</h3>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Direct contacts & metadata</p>
+            <!-- QR Trigger Button -->
+            <button class="qr-trigger-btn" id="btn-show-qr" title="Show Scan QR Code">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.875 13.5a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0ZM13.5 19.5a1.875 1.875 0 1 0 3.75 0h-3.75Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 16.5h-2.25v2.25H19.5v-2.25ZM19.5 13.5h-2.25v2.25H19.5v-2.25Z" />
+              </svg>
+            </button>
           </div>
           <div class="widget-meta-list" style="margin-bottom: 24px;">
             <div class="widget-meta-row">
@@ -116,21 +129,71 @@
       </div>
     </section>
 
-    <!-- Career Timeline Slider Widget -->
-    <section class="timeline-slider-section container" id="timeline-filter-section">
-      <div class="timeline-slider-card">
-        <div class="timeline-slider-header">
-          <span class="timeline-slider-title">Interactive Career Timeline</span>
-          <span class="timeline-slider-val" id="timeline-slider-val">All Operations</span>
+    <!-- Live Availability Calendar Section -->
+    <section class="section-padding container" id="status-calendar-section" style="padding-top: 48px; padding-bottom: 24px;">
+      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
+        
+        <!-- Availability Calendar Card -->
+        <div class="widget-bento-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="mono-text" style="margin-bottom: 12px;">Live Bookings</div>
+            <h3 style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 8px;">Availability Calendar</h3>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 24px;">Monthly scheduling updates for event production engagements.</p>
+          </div>
+          <div class="calendar-widget-grid" id="calendar-widget-grid">
+            <!-- Rendered dynamically in app.js -->
+          </div>
         </div>
-        <input type="range" class="timeline-range-input" id="timeline-range-input" min="2020" max="2026" value="2020">
-        <div class="timeline-ticks" id="timeline-ticks-container">
-          <span class="timeline-tick-label active" data-year="all">All</span>
-          <span class="timeline-tick-label" data-year="2021">2021</span>
-          <span class="timeline-tick-label" data-year="2022">2022</span>
-          <span class="timeline-tick-label" data-year="2024">2024</span>
-          <span class="timeline-tick-label" data-year="2025">2025</span>
-          <span class="timeline-tick-label" data-year="2026">2026</span>
+
+        <!-- Crew Structure Node Teaser -->
+        <div class="widget-bento-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="mono-text" style="margin-bottom: 12px;">Operations Hierarchy</div>
+            <h3 style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 8px;">Production Crew Blueprint</h3>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 24px;">Visual map of stage managers, crew leads, and coordinate channels.</p>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <a href="#crew-section" class="btn-apple btn-apple-solid" style="width:100%;">View Blueprint Chart</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Career Timeline & Budget Slider Widgets -->
+    <section class="timeline-slider-section container" id="timeline-filter-section">
+      <div class="timeline-slider-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+        <!-- Timeline Slider -->
+        <div>
+          <div class="timeline-slider-header">
+            <span class="timeline-slider-title">Career Timeline</span>
+            <span class="timeline-slider-val" id="timeline-slider-val">All Operations</span>
+          </div>
+          <input type="range" class="timeline-range-input" id="timeline-range-input" min="2020" max="2026" value="2020">
+          <div class="timeline-ticks" id="timeline-ticks-container">
+            <span class="timeline-tick-label active" data-year="all">All</span>
+            <span class="timeline-tick-label" data-year="2021">2021</span>
+            <span class="timeline-tick-label" data-year="2022">2022</span>
+            <span class="timeline-tick-label" data-year="2024">2024</span>
+            <span class="timeline-tick-label" data-year="2025">2025</span>
+            <span class="timeline-tick-label" data-year="2026">2026</span>
+          </div>
+        </div>
+        
+        <!-- Budget Slider -->
+        <div style="border-left: 1px solid var(--border-color); padding-left: 40px;" id="budget-slider-column">
+          <div class="timeline-slider-header">
+            <span class="timeline-slider-title">Minimum Event Budget Scale</span>
+            <span class="timeline-slider-val" id="budget-slider-val">Show All Budgets</span>
+          </div>
+          <input type="range" class="timeline-range-input" id="budget-range-input" min="0" max="10" value="0">
+          <div class="timeline-ticks" id="budget-ticks-container">
+            <span class="timeline-tick-label active" data-budget="0">All</span>
+            <span class="timeline-tick-label" data-budget="1">$1M</span>
+            <span class="timeline-tick-label" data-budget="2">$2M</span>
+            <span class="timeline-tick-label" data-budget="5">$5M</span>
+            <span class="timeline-tick-label" data-budget="10">$10M+</span>
+          </div>
         </div>
       </div>
     </section>
@@ -139,8 +202,8 @@
     <section class="section-padding container" id="experience-section">
       <div class="section-intro">
         <div class="section-label mono-text">Selected Commissions</div>
-        <h2 class="section-title">A catalog of productions, events, and brand campaigns.</h2>
-        <p class="section-subtitle">Use the timeline slider above or category filters below to filter the grid.</p>
+        <h2 class="section-title">A catalog of productions, events, and campaigns.</h2>
+        <p class="section-subtitle">Use the sliders above or tags below to filter the grid structure.</p>
       </div>
 
       <div class="filter-tags-list" id="experience-filters">
@@ -225,6 +288,22 @@
       </div>
     </section>
 
+    <!-- Crew Tree Section -->
+    <section class="section-padding crew-structure-section" id="crew-section">
+      <div class="container">
+        <div class="section-intro" style="text-align: center; max-width: 550px; margin: 0 auto 40px auto;">
+          <div class="section-label mono-text">Operations Blueprint</div>
+          <h2 class="section-title">Production Crew Hierarchy</h2>
+          <p class="section-subtitle">A visual model of how Amr organizes crew structures for mega event productions.</p>
+        </div>
+        <div class="crew-tree-scroll-wrap">
+          <div class="crew-tree-layout" id="crew-tree-root">
+            <!-- Populated dynamically in app.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer container">
       <div class="footer-brand">AMR SAMIR EDRIS</div>
@@ -251,6 +330,25 @@
       <button class="modal-close" id="btn-close-modal">&times;</button>
       <div class="modal-body" id="modal-body-content">
         <!-- Loaded dynamically in app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       Contact QR Code Modal
+       ========================================== -->
+  <div class="modal-overlay" id="qr-modal">
+    <div class="modal-content" style="max-width: 320px;">
+      <button class="modal-close" id="btn-close-qr-modal">&times;</button>
+      <div class="qr-modal-inner">
+        <h3 style="margin-bottom: 8px;">Scan Contact</h3>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 20px;">Add Amr Samir Edris directly to your mobile phone contacts.</p>
+        <div class="qr-code-img-box">
+          <img id="qr-code-img" src="" alt="vCard QR Code">
+        </div>
+        <button class="btn-apple btn-apple-solid" id="btn-qr-download-vcard" style="width: 100%;">
+          Download vCard File
+        </button>
       </div>
     </div>
   </div>
@@ -308,6 +406,11 @@
             </button>
           </li>
           <li>
+            <button class="sidebar-nav-btn" data-target="panel-pitches">
+              Client Pitches
+            </button>
+          </li>
+          <li>
             <button class="sidebar-nav-btn" data-target="panel-assets">
               Files & Webhooks
             </button>
@@ -324,7 +427,8 @@
       <main class="console-panel-view">
         <div class="console-panel-header">
           <h2 id="panel-title">Analytics</h2>
-          <div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button class="btn-apple btn-apple-outline" id="btn-export-csv">Export logs to CSV</button>
             <a href="#" style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; text-decoration: none; color: var(--accent);">&larr; Return to Live Site</a>
           </div>
         </div>
@@ -426,6 +530,29 @@
               <button type="submit" class="btn-apple btn-apple-solid" style="margin-top: 12px;">Commit Configuration</button>
             </div>
           </form>
+
+          <!-- Calendar Availability editor -->
+          <div class="console-cms-card">
+            <h3>Monthly Availability Status</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 20px;">Update availability status for upcoming months. Changes reflect instantly on front page.</p>
+            <div id="cms-calendar-months">
+              <!-- Dynamically populated in admin.js -->
+            </div>
+            <button type="button" class="btn-apple btn-apple-solid" id="btn-save-calendar">Save Calendar Status</button>
+          </div>
+
+          <!-- Crew Structure Chart editor -->
+          <div class="console-cms-card">
+            <h3>Crew Structure Hierarchy</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 20px;">Define hierarchy roles (Stage Lead, Backstage Manager, Vendor Liaison) and assign names. Connects automatically to hierarchy graph.</p>
+            <div id="cms-crew-members-container" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+              <!-- Dynamically populated in admin.js -->
+            </div>
+            <div style="display:flex; gap:12px;">
+              <button type="button" class="btn-apple btn-apple-outline" id="btn-add-crew-node">+ Add Crew Role</button>
+              <button type="button" class="btn-apple btn-apple-solid" id="btn-save-crew">Save Crew Structure</button>
+            </div>
+          </div>
         </div>
 
         <!-- Panel 3: Experiences CMS -->
@@ -461,8 +588,12 @@
                   <input type="text" id="exp-location" class="text-input-field">
                 </div>
                 <div class="input-block-row">
-                  <label for="exp-date">Date Range</label>
-                  <input type="text" id="exp-date" class="text-input-field">
+                  <label for="exp-date">Date Range (e.g. 2025 or Sep 2024 - May 2026)</label>
+                  <input type="text" id="exp-date" class="text-input-field" required>
+                </div>
+                <div class="input-block-row">
+                  <label for="exp-budget">Project Budget Scale (in Millions USD, e.g. 5 for $5M)</label>
+                  <input type="number" id="exp-budget" class="text-input-field" min="0" step="0.1" value="0">
                 </div>
                 <div class="input-block-row">
                   <label for="exp-category">Category</label>
@@ -507,7 +638,52 @@
           </div>
         </div>
 
-        <!-- Panel 4: Assets & Webhooks CMS -->
+        <!-- Panel 4: Pitches CMS -->
+        <div class="console-tab-panel" id="panel-pitches">
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+            <button class="btn-apple btn-apple-solid" id="btn-add-pitch">+ Create Pitch Link</button>
+          </div>
+          
+          <div class="console-cms-card">
+            <h3>Active Curated Pitches</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 20px;">Generate distinct personalized links (e.g. <code>#pitch/dct</code>) displaying customized welcome boards and selected project cards for specific clients.</p>
+            <div id="pitches-list-container">
+              <!-- Loaded dynamically in admin.js -->
+            </div>
+          </div>
+
+          <!-- Pitch Form Modal -->
+          <div class="modal-overlay" id="pitch-edit-modal">
+            <div class="modal-content" style="max-width: 600px;">
+              <button class="modal-close" id="btn-close-pitch-modal">&times;</button>
+              <h3 id="pitch-modal-title" style="font-size: 1.3rem; margin-bottom: 20px; color: #fff;">Edit Curated Pitch</h3>
+              <form id="pitch-form">
+                <input type="hidden" id="pitch-id">
+                <div class="input-block-row">
+                  <label for="pitch-title">Client Name</label>
+                  <input type="text" id="pitch-title" class="text-input-field" required placeholder="e.g. DCT Abu Dhabi">
+                </div>
+                <div class="input-block-row">
+                  <label for="pitch-slug">URL Route Slug (letters & numbers only)</label>
+                  <input type="text" id="pitch-slug" class="text-input-field" required placeholder="e.g. dct">
+                </div>
+                <div class="input-block-row">
+                  <label for="pitch-greeting">Personalized Greeting message</label>
+                  <textarea id="pitch-greeting" class="text-input-field" rows="3" required placeholder="Welcome DCT Abu Dhabi Team..."></textarea>
+                </div>
+                <div class="input-block-row">
+                  <label style="margin-bottom: 12px; display:block;">Select Case Studies to Feature</label>
+                  <div id="pitch-projects-selector" style="max-height: 200px; overflow-y: auto; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <!-- Populated dynamically in admin.js -->
+                  </div>
+                </div>
+                <button type="submit" class="btn-apple btn-apple-solid" style="width: 100%; margin-top: 16px;">Save Pitch</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 5: Assets & Webhooks CMS -->
         <div class="dashboard-tab-panel" id="panel-assets">
           <div class="console-cms-card">
             <h3>Document Repository</h3>
