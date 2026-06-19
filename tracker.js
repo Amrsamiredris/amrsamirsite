@@ -16,7 +16,7 @@ const sessionId = getSessionId();
 export async function logEvent(type, label = '', duration = 0) {
   try {
     // Avoid tracking admin activities
-    if (window.location.hash === '#admin' || localStorage.getItem('sb-access-token')) {
+    if (type !== 'contact_inquiry' && (window.location.hash === '#admin' || localStorage.getItem('sb-access-token'))) {
       return;
     }
     

@@ -9,6 +9,8 @@ let currentExperiences = [];
 let vercelHookUrl = '';
 let siteContent = {};
 let currentPitches = [];
+let invitedAdmins = [];
+let pendingChanges = [];
 
 const FALLBACK_CREW = [
   { id: "1", role: "Project Director", name: "Amr Samir Edris", level: 1 },
@@ -94,8 +96,19 @@ function setupAdminListeners() {
   // Vercel Webhook form submit
   const vercelForm = document.getElementById('vercel-hook-form');
   if (vercelForm) {
-    generalForm ? null : null; // sanity check
     vercelForm.addEventListener('submit', saveVercelHook);
+  }
+
+  // Invite Team form submit
+  const inviteForm = document.getElementById('invite-team-form');
+  if (inviteForm) {
+    inviteForm.addEventListener('submit', handleInviteSubmit);
+  }
+
+  // Accept Invite form submit
+  const acceptInviteForm = document.getElementById('accept-invite-form');
+  if (acceptInviteForm) {
+    acceptInviteForm.addEventListener('submit', handleAcceptInviteSubmit);
   }
 
   // Vercel trigger redeploy button click
@@ -148,29 +161,183 @@ function setupAdminListeners() {
   }
 }
 
+// Apply UI controls and text changes based on user roles
+function applyRoleUI() {
+  const role = localStorage.getItem('admin_role');
+  
+  const teamBtn = document.getElementById('sidebar-btn-team');
+  const approvalsBtn = document.getElementById('sidebar-btn-approvals');
+  
+  if (teamBtn) {
+    teamBtn.style.display = role === 'superadmin' ? 'block' : 'none';
+  }
+  if (approvalsBtn) {
+    approvalsBtn.style.display = role === 'superadmin' ? 'block' : 'none';
+  }
+  
+  const existingBanner = document.getElementById('role-alert-banner');
+  if (existingBanner) existingBanner.remove();
+  
+  const header = document.querySelector('.console-panel-header');
+  
+  if (role === 'readonly') {
+    const banner = document.createElement('div');
+    banner.id = 'role-alert-banner';
+    banner.className = 'readonly-alert-banner';
+    banner.style.background = 'rgba(255, 159, 10, 0.15)';
+    banner.style.color = '#ff9f0a';
+    banner.style.border = '1px solid rgba(255, 159, 10, 0.3)';
+    banner.style.borderRadius = '12px';
+    banner.style.padding = '12px 16px';
+    banner.style.marginBottom = '24px';
+    banner.style.fontSize = '0.85rem';
+    banner.style.display = 'flex';
+    banner.style.alignItems = 'center';
+    banner.style.gap = '10px';
+    banner.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px; height:18px; flex-shrink:0;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+      </svg>
+      <span><strong>Read-Only Access:</strong> You can inspect settings and view logs, but changes cannot be saved.</span>
+    `;
+    if (header) header.parentNode.insertBefore(banner, header.nextSibling);
+    
+    setTimeout(() => {
+      document.querySelectorAll('#admin-dashboard-panel input, #admin-dashboard-panel select, #admin-dashboard-panel textarea, #admin-dashboard-panel button').forEach(el => {
+        if (el.id !== 'btn-logout' && !el.classList.contains('sidebar-nav-btn') && el.id !== 'btn-export-csv') {
+          el.disabled = true;
+        }
+      });
+    }, 100);
+    
+  } else if (role === 'confirmation') {
+    const banner = document.createElement('div');
+    banner.id = 'role-alert-banner';
+    banner.className = 'readonly-alert-banner';
+    banner.style.background = 'rgba(10, 132, 255, 0.15)';
+    banner.style.color = '#0a84ff';
+    banner.style.border = '1px solid rgba(10, 132, 255, 0.3)';
+    banner.style.borderRadius = '12px';
+    banner.style.padding = '12px 16px';
+    banner.style.marginBottom = '24px';
+    banner.style.fontSize = '0.85rem';
+    banner.style.display = 'flex';
+    banner.style.alignItems = 'center';
+    banner.style.gap = '10px';
+    banner.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px; height:18px; flex-shrink:0;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+      </svg>
+      <span><strong>Restricted Editor Access:</strong> Modifications will be queued for Super Admin approval.</span>
+    `;
+    if (header) header.parentNode.insertBefore(banner, header.nextSibling);
+    
+    setTimeout(() => {
+      document.querySelectorAll('#admin-dashboard-panel input, #admin-dashboard-panel select, #admin-dashboard-panel textarea, #admin-dashboard-panel button').forEach(el => {
+        if (el.id !== 'btn-logout' && !el.classList.contains('sidebar-nav-btn')) {
+          el.disabled = false;
+        }
+      });
+      
+      const saveGeneralBtn = document.querySelector('#cms-general-form button[type="submit"]');
+      if (saveGeneralBtn) saveGeneralBtn.textContent = 'Submit General Profile for Approval';
+      
+      const saveCalBtn = document.getElementById('btn-save-calendar');
+      if (saveCalBtn) saveCalBtn.textContent = 'Submit Calendar for Approval';
+      
+      const saveCrewBtn = document.getElementById('btn-save-crew');
+      if (saveCrewBtn) saveCrewBtn.textContent = 'Submit Crew Blueprint for Approval';
+      
+      const saveExpBtn = document.querySelector('#experience-form button[type="submit"]');
+      if (saveExpBtn) saveExpBtn.textContent = 'Submit Card for Approval';
+      
+      const savePitchBtn = document.querySelector('#pitch-form button[type="submit"]');
+      if (savePitchBtn) savePitchBtn.textContent = 'Submit Pitch for Approval';
+      
+      document.querySelectorAll('#upload-cv-area input, #upload-portfolio-area input, #upload-logo-area input, #vercel-hook-form input, #vercel-hook-form button').forEach(el => {
+        el.disabled = true;
+      });
+    }, 100);
+  } else {
+    setTimeout(() => {
+      document.querySelectorAll('#admin-dashboard-panel input, #admin-dashboard-panel select, #admin-dashboard-panel textarea, #admin-dashboard-panel button').forEach(el => {
+        if (el.id !== 'btn-logout' && !el.classList.contains('sidebar-nav-btn')) {
+          el.disabled = false;
+        }
+      });
+      
+      const saveGeneralBtn = document.querySelector('#cms-general-form button[type="submit"]');
+      if (saveGeneralBtn) saveGeneralBtn.textContent = 'Save general settings';
+      
+      const saveCalBtn = document.getElementById('btn-save-calendar');
+      if (saveCalBtn) saveCalBtn.textContent = 'Save Calendar Status';
+      
+      const saveCrewBtn = document.getElementById('btn-save-crew');
+      if (saveCrewBtn) saveCrewBtn.textContent = 'Save Crew Structure';
+      
+      const saveExpBtn = document.querySelector('#experience-form button[type="submit"]');
+      if (saveExpBtn) saveExpBtn.textContent = 'Save Experience Card';
+      
+      const savePitchBtn = document.querySelector('#pitch-form button[type="submit"]');
+      if (savePitchBtn) savePitchBtn.textContent = 'Save Pitch';
+    }, 100);
+  }
+}
+
 // Authenticate session and render views
 async function checkAuthAndInit() {
   try {
-    if (!supabase) return;
-    
-    const { data: { session } } = await supabase.auth.getSession();
+    await checkInviteToken();
     
     const loginPanel = document.getElementById('admin-login-panel');
     const dashboardPanel = document.getElementById('admin-dashboard-panel');
     
-    if (session) {
-      // User is authenticated
+    const role = localStorage.getItem('admin_role');
+    const email = localStorage.getItem('admin_email');
+    
+    let isAuthed = false;
+    
+    if (role && email) {
+      isAuthed = true;
+    } else if (supabase) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data } = await supabase
+          .from('site_content')
+          .select('*')
+          .eq('key', 'invited_admins')
+          .single();
+          
+        const invites = data ? data.value : [];
+        const userInvite = invites.find(i => i.email.toLowerCase() === session.user.email.toLowerCase());
+        
+        if (userInvite && userInvite.status === 'accepted') {
+          localStorage.setItem('admin_role', userInvite.role);
+          localStorage.setItem('admin_email', session.user.email);
+          isAuthed = true;
+        } else {
+          await supabase.auth.signOut();
+          isAuthed = false;
+        }
+      }
+    }
+    
+    if (isAuthed) {
       loginPanel.style.display = 'none';
       dashboardPanel.style.display = 'flex';
       
-      // Load panels data
+      applyRoleUI();
+      
       loadAnalyticsData();
       loadGeneralSettingsCMS();
       loadExperiencesCMS();
       loadAssetsCMS();
       loadVercelSettings();
+      
+      if (activeTab === 'panel-team') loadTeamCMS();
+      if (activeTab === 'panel-approvals') loadApprovalsCMS();
+      if (activeTab === 'panel-inbox') loadInboxCMS();
     } else {
-      // User is not authenticated
       loginPanel.style.display = 'flex';
       dashboardPanel.style.display = 'none';
     }
@@ -182,7 +349,7 @@ async function checkAuthAndInit() {
 // Handle Admin login
 async function handleLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('login-email').value;
+  const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   
   const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -190,10 +357,35 @@ async function handleLogin(e) {
   submitBtn.textContent = 'Verifying Credentials...';
 
   try {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (email === 'amr123' && password === 'amr123') {
+      localStorage.setItem('admin_role', 'superadmin');
+      localStorage.setItem('admin_email', 'amr123');
+      await checkAuthAndInit();
+      return;
+    }
+
+    if (!supabase) throw new Error('Supabase client unavailable');
+
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    if (authError) throw authError;
+
+    const { data: inviteData } = await supabase
+      .from('site_content')
+      .select('*')
+      .eq('key', 'invited_admins')
+      .single();
+      
+    const invites = inviteData ? inviteData.value : [];
+    const matchedInvite = invites.find(i => i.email.toLowerCase() === email.toLowerCase());
     
-    await checkAuthAndInit();
+    if (matchedInvite && matchedInvite.status === 'accepted') {
+      localStorage.setItem('admin_role', matchedInvite.role);
+      localStorage.setItem('admin_email', email);
+      await checkAuthAndInit();
+    } else {
+      await supabase.auth.signOut();
+      throw new Error('Unauthorized Access. You must be invited by a Super Admin to access this console.');
+    }
   } catch (err) {
     alert('Authentication Failed: ' + err.message);
   } finally {
@@ -205,7 +397,11 @@ async function handleLogin(e) {
 // Terminate auth session
 async function handleLogout() {
   try {
-    await supabase.auth.signOut();
+    localStorage.removeItem('admin_role');
+    localStorage.removeItem('admin_email');
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     window.location.hash = '';
     await checkAuthAndInit();
   } catch (err) {
@@ -217,7 +413,6 @@ async function handleLogout() {
 function switchTab(panelId) {
   activeTab = panelId;
   
-  // Set active class on menu items
   const navButtons = document.querySelectorAll('.dashboard-sidebar .sidebar-nav-btn');
   navButtons.forEach(btn => {
     if (btn.dataset.target === panelId) {
@@ -227,7 +422,6 @@ function switchTab(panelId) {
     }
   });
 
-  // Toggle visible panels
   const panels = document.querySelectorAll('.console-tab-panel, .dashboard-tab-panel');
   panels.forEach(p => {
     if (p.id === panelId) {
@@ -237,15 +431,526 @@ function switchTab(panelId) {
     }
   });
 
-  // Set console title
+  if (panelId === 'panel-inbox') loadInboxCMS();
+  if (panelId === 'panel-team') loadTeamCMS();
+  if (panelId === 'panel-approvals') loadApprovalsCMS();
+
   const headingTitles = {
     'panel-analytics': 'Analytics Overview',
     'panel-content': 'General Profile Settings',
     'panel-experiences': 'Experience Registry',
     'panel-assets': 'Document & Media Assets',
-    'panel-pitches': 'Curated Client Pitches'
+    'panel-pitches': 'Curated Client Pitches',
+    'panel-inbox': 'Inquiries Inbox',
+    'panel-team': 'Team & Invites',
+    'panel-approvals': 'Approvals Queue'
   };
   document.getElementById('panel-title').textContent = headingTitles[panelId] || 'Console';
+}
+
+// Helper to submit change requests for confirmation workflow
+async function submitChangeRequest(type, payload, summary) {
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('*')
+      .eq('key', 'pending_changes')
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+
+    const queue = data ? data.value : [];
+    
+    const newRequest = {
+      id: 'change_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      editor: localStorage.getItem('admin_email') || 'editor',
+      timestamp: new Date().toLocaleString(),
+      type: type,
+      payload: payload,
+      summary: summary
+    };
+
+    queue.push(newRequest);
+
+    const { error: upsertError } = await supabase
+      .from('site_content')
+      .upsert({ key: 'pending_changes', value: queue }, { onConflict: 'key' });
+
+    if (upsertError) throw upsertError;
+
+    alert('Your updates have been submitted to the approvals queue. A Super Admin will review and publish them.');
+  } catch (err) {
+    alert('Failed to submit change request: ' + err.message);
+  }
+}
+
+// Check for and process invitation token parameter
+async function checkInviteToken() {
+  const hash = window.location.hash;
+  if (hash.includes('invite?token=')) {
+    const token = hash.split('token=')[1]?.split('&')[0];
+    if (token) {
+      try {
+        if (!supabase) return;
+        const { data, error } = await supabase
+          .from('site_content')
+          .select('*')
+          .eq('key', 'invited_admins')
+          .single();
+          
+        if (error) throw error;
+        
+        const invites = data ? data.value : [];
+        const invite = invites.find(i => i.token === token);
+        
+        if (invite && invite.status === 'pending') {
+          document.getElementById('login-form').style.display = 'none';
+          document.getElementById('accept-invite-form').style.display = 'block';
+          
+          document.getElementById('invite-email').value = invite.email;
+          document.getElementById('invite-token-hidden').value = token;
+          
+          const head = document.querySelector('.login-widget-head');
+          if (head) {
+            head.querySelector('h2').textContent = 'Join the Team';
+            head.querySelector('p').textContent = `Set access credentials for ${invite.email}`;
+          }
+        } else {
+          alert('Invitation is invalid, expired, or has already been accepted.');
+          window.location.hash = '#admin';
+        }
+      } catch (err) {
+        console.error('Error verifying invite token:', err);
+      }
+    }
+  }
+}
+
+// Submit invitation generation form
+async function handleInviteSubmit(e) {
+  e.preventDefault();
+  const emailInput = document.getElementById('invite-member-email');
+  const roleSelect = document.getElementById('invite-member-role');
+  
+  if (!emailInput || !roleSelect) return;
+  
+  const email = emailInput.value.trim().toLowerCase();
+  const role = roleSelect.value;
+  
+  const token = 'invite_' + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+  
+  const newInvite = {
+    email: email,
+    role: role,
+    token: token,
+    status: 'pending'
+  };
+  
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    if (invitedAdmins.some(a => a.email.toLowerCase() === email.toLowerCase())) {
+      alert('This email address has already been invited.');
+      return;
+    }
+    
+    invitedAdmins.push(newInvite);
+    
+    const { error } = await supabase
+      .from('site_content')
+      .upsert({ key: 'invited_admins', value: invitedAdmins }, { onConflict: 'key' });
+      
+    if (error) throw error;
+    
+    const inviteLink = window.location.origin + window.location.pathname + '#admin/invite?token=' + token;
+    
+    const resultContainer = document.getElementById('invite-result-container');
+    const outputInput = document.getElementById('invite-link-output');
+    const copyBtn = document.getElementById('btn-copy-invite');
+    const mailBtn = document.getElementById('btn-mail-invite');
+    
+    if (resultContainer && outputInput) {
+      outputInput.value = inviteLink;
+      resultContainer.style.display = 'block';
+      
+      copyBtn.onclick = () => {
+        outputInput.select();
+        document.execCommand('copy');
+        alert('Invitation link copied to clipboard!');
+      };
+      
+      const mailtoSubject = encodeURIComponent("Administrative invitation to Amr Samir Edris site");
+      const mailtoBody = encodeURIComponent(`Hello,\n\nYou have been invited as a ${role} editor on Amr Samir Edris's website console.\n\nPlease activate your access by clicking this link:\n${inviteLink}\n\nBest regards,\nWorkspace Administrator`);
+      mailBtn.href = `mailto:${email}?subject=${mailtoSubject}&body=${mailtoBody}`;
+    }
+    
+    emailInput.value = '';
+    loadTeamCMS();
+  } catch (err) {
+    alert('Failed to generate invite: ' + err.message);
+  }
+}
+
+// Submit registration form to accept invite
+async function handleAcceptInviteSubmit(e) {
+  e.preventDefault();
+  const email = document.getElementById('invite-email').value;
+  const password = document.getElementById('invite-password').value;
+  const token = document.getElementById('invite-token-hidden').value;
+  
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Activating access...';
+  
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    
+    const { error: signUpError } = await supabase.auth.signUp({ email, password });
+    if (signUpError) throw signUpError;
+    
+    const { data: fetchInvites, error: fetchError } = await supabase
+      .from('site_content')
+      .select('*')
+      .eq('key', 'invited_admins')
+      .single();
+      
+    if (fetchError) throw fetchError;
+    
+    const invites = fetchInvites ? fetchInvites.value : [];
+    const inviteIndex = invites.findIndex(i => i.token === token);
+    if (inviteIndex !== -1) {
+      invites[inviteIndex].status = 'accepted';
+    }
+    
+    const { error: updateError } = await supabase
+      .from('site_content')
+      .upsert({ key: 'invited_admins', value: invites }, { onConflict: 'key' });
+      
+    if (updateError) throw updateError;
+    
+    alert('Access activated successfully! Logging you in...');
+    
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) throw signInError;
+    
+    localStorage.setItem('admin_role', invites[inviteIndex].role);
+    localStorage.setItem('admin_email', email);
+    
+    window.location.hash = '#admin';
+    await checkAuthAndInit();
+  } catch (err) {
+    alert('Failed to accept invitation: ' + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Accept Invitation';
+  }
+}
+
+// Fetch and render contact inbox submissions
+async function loadInboxCMS() {
+  const tbody = document.getElementById('inbox-messages-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Scanning inbox events...</td></tr>';
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    const { data, error } = await supabase
+      .from('analytics_events')
+      .select('*')
+      .eq('event_type', 'contact_inquiry')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    tbody.innerHTML = '';
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">Inbox is empty. No messages received yet.</td></tr>';
+      return;
+    }
+
+    data.forEach(event => {
+      let payload = {};
+      try {
+        payload = JSON.parse(event.event_label);
+      } catch (err) {
+        payload = { message: event.event_label };
+      }
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.72rem; white-space: nowrap;">
+          ${new Date(event.created_at).toLocaleString()}
+        </td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); font-weight: 500; color: var(--text-primary);">
+          ${escapeHtml(payload.name || 'Anonymous')}
+        </td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);">
+          <a href="mailto:${escapeHtml(payload.email)}" style="color: var(--accent); text-decoration: none;">${escapeHtml(payload.email || 'N/A')}</a>
+        </td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); font-weight: 500;">
+          ${escapeHtml(payload.subject || 'Inquiry')}
+        </td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); max-width: 300px; word-wrap: break-word;">
+          ${escapeHtml(payload.message || '')}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('Error loading inbox:', err);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #ff453a;">Failed to load inbox: ${err.message}</td></tr>`;
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// Fetch and render admin invitations / team lists
+async function loadTeamCMS() {
+  const tbody = document.getElementById('team-list-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">Fetching team configuration...</td></tr>';
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('*')
+      .eq('key', 'invited_admins')
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+
+    invitedAdmins = data ? data.value : [];
+    tbody.innerHTML = '';
+
+    const ownerTr = document.createElement('tr');
+    ownerTr.innerHTML = `
+      <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); font-weight: 500; color: var(--text-primary);">amr123 (Owner)</td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);"><span class="badge-role superadmin">Super Admin</span></td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);"><span style="color: #30d158; font-weight:500;">Active</span></td>
+      <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); text-align: right; color: var(--text-muted); font-size: 0.75rem;">System Account</td>
+    `;
+    tbody.appendChild(ownerTr);
+
+    invitedAdmins.forEach((member, idx) => {
+      const tr = document.createElement('tr');
+      const roleBadge = member.role === 'superadmin' ? 'Super Admin' : (member.role === 'confirmation' ? 'Read & Edit (Confirmation)' : 'Read-Only');
+      const statusBadge = member.status === 'accepted' ? '<span style="color: #30d158; font-weight:500;">Accepted</span>' : '<span style="color: #ff9f0a; font-weight:500;">Pending Acceptance</span>';
+      
+      tr.innerHTML = `
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); font-weight: 500; color: var(--text-primary);">${escapeHtml(member.email)}</td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);">${roleBadge}</td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);">${statusBadge}</td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); text-align: right;">
+          <button class="btn-apple btn-apple-outline btn-delete-member" data-index="${idx}" style="padding: 4px 8px; font-size: 0.72rem; border-color:#ff3b30; color:#ff3b30;">Remove</button>
+        </td>
+      `;
+      
+      tr.querySelector('.btn-delete-member').addEventListener('click', (e) => {
+        const index = parseInt(e.currentTarget.dataset.index);
+        deleteTeamMember(index);
+      });
+
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('Error loading team:', err);
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #ff453a;">Failed to load team list: ${err.message}</td></tr>`;
+  }
+}
+
+async function deleteTeamMember(index) {
+  if (!confirm('Are you sure you want to revoke access for this admin member?')) return;
+  
+  invitedAdmins.splice(index, 1);
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    const { error } = await supabase
+      .from('site_content')
+      .upsert({ key: 'invited_admins', value: invitedAdmins }, { onConflict: 'key' });
+
+    if (error) throw error;
+    alert('Access revoked successfully.');
+    loadTeamCMS();
+  } catch (err) {
+    alert('Failed to revoke access: ' + err.message);
+  }
+}
+
+// Fetch and render pending approvals queue
+async function loadApprovalsCMS() {
+  const container = document.getElementById('approvals-list-container');
+  if (!container) return;
+  container.innerHTML = '<p style="text-align: center; padding: 20px;">Scanning pending changes queue...</p>';
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('*')
+      .eq('key', 'pending_changes')
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+
+    pendingChanges = data ? data.value : [];
+    container.innerHTML = '';
+
+    if (pendingChanges.length === 0) {
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: 12px;">Approvals queue is clear. No pending changes.</div>';
+      return;
+    }
+
+    pendingChanges.forEach((change, idx) => {
+      const card = document.createElement('div');
+      card.className = 'approval-card-item';
+      
+      let payloadHtml = '';
+      if (change.type === 'general_settings') {
+        payloadHtml = `
+          <table class="approval-diff-table">
+            <thead>
+              <tr style="color:var(--text-primary); font-weight:600;"><td style="width:120px;">Key</td><td>New Proposed Value</td></tr>
+            </thead>
+            <tbody>
+              ${change.payload.map(p => `<tr><td class="approval-diff-label">${p.key}</td><td class="approval-diff-new">${typeof p.value === 'object' ? JSON.stringify(p.value) : escapeHtml(String(p.value))}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        `;
+      } else if (change.type === 'experience_save') {
+        const exp = change.payload;
+        payloadHtml = `
+          <div style="font-weight: 500; margin-bottom: 4px; color: var(--text-primary);">Save Project Card:</div>
+          <table class="approval-diff-table">
+            <tr><td class="approval-diff-label">Role</td><td class="approval-diff-new">${escapeHtml(exp.role)}</td></tr>
+            <tr><td class="approval-diff-label">Company</td><td class="approval-diff-new">${escapeHtml(exp.company)}</td></tr>
+            <tr><td class="approval-diff-label">Location</td><td class="approval-diff-new">${escapeHtml(exp.location)}</td></tr>
+            <tr><td class="approval-diff-label">Date Range</td><td class="approval-diff-new">${escapeHtml(exp.date_range)}</td></tr>
+            <tr><td class="approval-diff-label">Description</td><td class="approval-diff-new">${escapeHtml(exp.description)}</td></tr>
+          </table>
+        `;
+      } else if (change.type === 'experience_delete') {
+        payloadHtml = `<div style="color:#ff3b30; font-weight:500;">Action: Delete Project Card with ID: ${change.payload}</div>`;
+      } else {
+        payloadHtml = `<pre style="font-size:0.75rem; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px; overflow-x:auto;">${escapeHtml(JSON.stringify(change.payload, null, 2))}</pre>`;
+      }
+
+      card.innerHTML = `
+        <div class="approval-card-header">
+          <div>
+            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">${change.summary || 'Pending Edit'}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Submitted by: <strong>${escapeHtml(change.editor)}</strong> on ${change.timestamp}</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-apple btn-apple-solid btn-approve-change" data-index="${idx}" style="padding: 6px 12px; font-size:0.75rem;">Approve & Publish</button>
+            <button class="btn-apple btn-apple-outline btn-reject-change" data-index="${idx}" style="padding: 6px 12px; font-size:0.75rem; border-color:#ff3b30; color:#ff3b30;">Reject</button>
+          </div>
+        </div>
+        <div class="approval-card-body">
+          ${payloadHtml}
+        </div>
+      `;
+
+      card.querySelector('.btn-approve-change').addEventListener('click', (e) => {
+        const index = parseInt(e.currentTarget.dataset.index);
+        approvePendingChange(index);
+      });
+
+      card.querySelector('.btn-reject-change').addEventListener('click', (e) => {
+        const index = parseInt(e.currentTarget.dataset.index);
+        rejectPendingChange(index);
+      });
+
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error('Error loading approvals queue:', err);
+    container.innerHTML = `<p style="color: #ff453a; text-align: center; padding: 20px;">Failed to load approvals: ${err.message}</p>`;
+  }
+}
+
+async function approvePendingChange(index) {
+  const change = pendingChanges[index];
+  if (!confirm(`Are you sure you want to approve and publish changes submitted by ${change.editor}?`)) return;
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+
+    if (change.type === 'general_settings') {
+      for (const item of change.payload) {
+        const { error } = await supabase
+          .from('site_content')
+          .upsert(item, { onConflict: 'key' });
+        if (error) throw error;
+      }
+    } else if (change.type === 'experience_save') {
+      const { error } = await supabase
+        .from('experiences')
+        .upsert(change.payload, { onConflict: 'id' });
+      if (error) throw error;
+    } else if (change.type === 'experience_delete') {
+      const { error } = await supabase
+        .from('experiences')
+        .delete()
+        .eq('id', change.payload);
+      if (error) throw error;
+    } else if (change.type === 'calendar_status') {
+      const { error } = await supabase
+        .from('site_content')
+        .upsert({ key: 'calendar_status', value: change.payload }, { onConflict: 'key' });
+      if (error) throw error;
+    } else if (change.type === 'crew_structure') {
+      const { error } = await supabase
+        .from('site_content')
+        .upsert({ key: 'crew_structure', value: change.payload }, { onConflict: 'key' });
+      if (error) throw error;
+    } else if (change.type === 'pitch_save') {
+      const { error } = await supabase
+        .from('site_content')
+        .upsert({ key: 'pitches', value: change.payload }, { onConflict: 'key' });
+      if (error) throw error;
+    }
+
+    pendingChanges.splice(index, 1);
+    const { error: queueError } = await supabase
+      .from('site_content')
+      .upsert({ key: 'pending_changes', value: pendingChanges }, { onConflict: 'key' });
+    if (queueError) throw queueError;
+
+    alert('Change approved and published live successfully!');
+    loadApprovalsCMS();
+    
+    if (change.type === 'general_settings') {
+      loadGeneralSettingsCMS();
+    }
+  } catch (err) {
+    alert('Approving failed: ' + err.message);
+  }
+}
+
+async function rejectPendingChange(index) {
+  const change = pendingChanges[index];
+  if (!confirm(`Are you sure you want to reject and discard edits from ${change.editor}?`)) return;
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+
+    pendingChanges.splice(index, 1);
+    const { error: queueError } = await supabase
+      .from('site_content')
+      .upsert({ key: 'pending_changes', value: pendingChanges }, { onConflict: 'key' });
+    if (queueError) throw queueError;
+
+    alert('Change rejected and removed from queue.');
+    loadApprovalsCMS();
+  } catch (err) {
+    alert('Rejecting failed: ' + err.message);
+  }
 }
 
 // ==========================================================================
@@ -494,9 +1199,16 @@ async function loadGeneralSettingsCMS() {
 
 async function saveGeneralSettings(e) {
   e.preventDefault();
+  
+  const role = localStorage.getItem('admin_role');
+  if (role === 'readonly') {
+    alert('Permission Denied: Read-only accounts cannot modify settings.');
+    return;
+  }
+
   const btn = e.target.querySelector('button[type="submit"]');
   btn.disabled = true;
-  btn.textContent = 'Saving configuration...';
+  btn.textContent = role === 'confirmation' ? 'Submitting request...' : 'Saving configuration...';
 
   const nameVal = document.getElementById('cms-name').value;
   const statusVal = document.getElementById('cms-status').value;
@@ -515,6 +1227,16 @@ async function saveGeneralSettings(e) {
     { key: 'phone', value: phoneVal },
     { key: 'linkedin', value: linkedinVal }
   ];
+
+  if (role === 'confirmation') {
+    try {
+      await submitChangeRequest('general_settings', payloads, 'Update profile information (Name, status, bio, contacts)');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit for Approval';
+    }
+    return;
+  }
 
   try {
     if (!supabase) throw new Error('Supabase client unavailable');
@@ -630,6 +1352,12 @@ function closeExperienceModal() {
 async function saveExperience(e) {
   e.preventDefault();
   
+  const role = localStorage.getItem('admin_role');
+  if (role === 'readonly') {
+    alert('Permission Denied: Read-only accounts cannot modify settings.');
+    return;
+  }
+  
   const idValue = document.getElementById('exp-id').value;
   const roleVal = document.getElementById('exp-role').value;
   const companyVal = document.getElementById('exp-company').value;
@@ -661,6 +1389,17 @@ async function saveExperience(e) {
     impact_metrics: { val1: metricVal1, lbl1: metricLbl1, val2: metricVal2, lbl2: metricLbl2 }
   };
 
+  if (role === 'confirmation') {
+    const approvalPayload = { ...payload };
+    approvalPayload.id = idValue || 'exp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+    if (!idValue) {
+      approvalPayload.order_index = currentExperiences.length;
+    }
+    await submitChangeRequest('experience_save', approvalPayload, `Save project card: "${roleVal} @ ${companyVal}"`);
+    closeExperienceModal();
+    return;
+  }
+
   try {
     if (!supabase) throw new Error('Supabase client unavailable');
     
@@ -686,7 +1425,20 @@ async function saveExperience(e) {
 }
 
 async function deleteExperience(id) {
+  const role = localStorage.getItem('admin_role');
+  if (role === 'readonly') {
+    alert('Permission Denied: Read-only accounts cannot modify settings.');
+    return;
+  }
+
   if (!confirm('Are you sure you want to delete this card?')) return;
+
+  if (role === 'confirmation') {
+    const exp = currentExperiences.find(e => e.id === id);
+    const title = exp ? `"${exp.role} @ ${exp.company}"` : `ID ${id}`;
+    await submitChangeRequest('experience_delete', id, `Delete project card: ${title}`);
+    return;
+  }
 
   try {
     if (!supabase) throw new Error('Supabase client unavailable');
@@ -728,6 +1480,13 @@ async function loadVercelSettings() {
 
 async function saveVercelHook(e) {
   e.preventDefault();
+  
+  const role = localStorage.getItem('admin_role');
+  if (role !== 'superadmin') {
+    alert('Permission Denied: Only Super Admins can save webhook URLs.');
+    return;
+  }
+
   const input = document.getElementById('vercel-hook-input').value.trim();
   
   try {
@@ -752,6 +1511,12 @@ async function saveVercelHook(e) {
 
 // Trigger production rebuild in Vercel
 async function triggerVercelRedeploy() {
+  const role = localStorage.getItem('admin_role');
+  if (role !== 'superadmin') {
+    alert('Permission Denied: Only Super Admins can trigger production redeployments.');
+    return;
+  }
+
   if (!vercelHookUrl) return;
   
   const statusEl = document.getElementById('vercel-deploy-status');
@@ -762,7 +1527,6 @@ async function triggerVercelRedeploy() {
   btn.disabled = true;
 
   try {
-    // Call Vercel deploy hook POST endpoint directly from client browser
     const response = await fetch(vercelHookUrl, {
       method: 'POST'
     });
@@ -834,6 +1598,12 @@ async function loadAssetsCMS() {
 
 // Upload PDF assets
 async function uploadAsset(file, bucketFilename, statusElId) {
+  const role = localStorage.getItem('admin_role');
+  if (role !== 'superadmin') {
+    alert('Permission Denied: Only Super Admins can upload document assets.');
+    return;
+  }
+
   const statusIndicator = document.getElementById(statusElId);
   if (!file) return;
 
@@ -859,6 +1629,12 @@ async function uploadAsset(file, bucketFilename, statusElId) {
 
 // Upload Logo images
 async function uploadLogo(file) {
+  const role = localStorage.getItem('admin_role');
+  if (role !== 'superadmin') {
+    alert('Permission Denied: Only Super Admins can upload brand logos.');
+    return;
+  }
+
   const statusIndicator = document.getElementById('logo-upload-status');
   if (!file) return;
 
@@ -889,6 +1665,12 @@ async function uploadLogo(file) {
 
 // Delete Logo images
 async function deleteLogo(filename) {
+  const role = localStorage.getItem('admin_role');
+  if (role !== 'superadmin') {
+    alert('Permission Denied: Only Super Admins can delete brand logos.');
+    return;
+  }
+
   if (!confirm(`Confirm removal of logo mark: "${filename}"?`)) return;
 
   try {
@@ -948,6 +1730,12 @@ function loadCalendarCMS() {
 }
 
 async function saveCalendarStatus() {
+  const role = localStorage.getItem('admin_role');
+  if (role === 'readonly') {
+    alert('Permission Denied: Read-only accounts cannot modify settings.');
+    return;
+  }
+
   const container = document.getElementById('cms-calendar-months');
   if (!container) return;
   
@@ -960,7 +1748,17 @@ async function saveCalendarStatus() {
   
   const saveBtn = document.getElementById('btn-save-calendar');
   saveBtn.disabled = true;
-  saveBtn.textContent = 'Saving...';
+  saveBtn.textContent = role === 'confirmation' ? 'Submitting request...' : 'Saving...';
+  
+  if (role === 'confirmation') {
+    try {
+      await submitChangeRequest('calendar_status', statusObj, 'Update calendar availability status');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Submit for Approval';
+    }
+    return;
+  }
   
   try {
     if (!supabase) throw new Error('Supabase client unavailable');
@@ -1040,11 +1838,27 @@ function getCrewFromCMSInputs() {
 }
 
 async function saveCrewStructure() {
+  const role = localStorage.getItem('admin_role');
+  if (role === 'readonly') {
+    alert('Permission Denied: Read-only accounts cannot modify settings.');
+    return;
+  }
+
   const crew = getCrewFromCMSInputs();
   const saveBtn = document.getElementById('btn-save-crew');
   saveBtn.disabled = true;
-  saveBtn.textContent = 'Saving...';
+  saveBtn.textContent = role === 'confirmation' ? 'Submitting request...' : 'Saving...';
   
+  if (role === 'confirmation') {
+    try {
+      await submitChangeRequest('crew_structure', crew, 'Update production crew structure blueprint');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Submit for Approval';
+    }
+    return;
+  }
+
   try {
     if (!supabase) throw new Error('Supabase client unavailable');
     
@@ -1162,10 +1976,12 @@ function openPitchModal(pitch = null, index = null) {
     document.getElementById('pitch-title').value = pitch.title;
     document.getElementById('pitch-slug').value = pitch.slug;
     document.getElementById('pitch-greeting').value = pitch.greeting;
+    document.getElementById('pitch-passcode').value = pitch.passcode || '';
   } else {
     title.textContent = 'Create Curated Pitch Link';
     form.reset();
     document.getElementById('pitch-id').value = '';
+    document.getElementById('pitch-passcode').value = '';
   }
 
   modal.classList.add('active');
@@ -1179,10 +1995,17 @@ function closePitchModal() {
 async function savePitch(e) {
   e.preventDefault();
   
+  const role = localStorage.getItem('admin_role');
+  if (role === 'readonly') {
+    alert('Permission Denied: Read-only accounts cannot modify settings.');
+    return;
+  }
+  
   const indexVal = document.getElementById('pitch-id').value;
   const titleVal = document.getElementById('pitch-title').value.trim();
   const slugVal = document.getElementById('pitch-slug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
   const greetingVal = document.getElementById('pitch-greeting').value.trim();
+  const passcodeVal = document.getElementById('pitch-passcode').value.trim();
   
   const checkedCheckboxes = document.querySelectorAll('.pitch-project-checkbox:checked');
   const projectIds = Array.from(checkedCheckboxes).map(cb => cb.value);
@@ -1191,7 +2014,8 @@ async function savePitch(e) {
     title: titleVal,
     slug: slugVal,
     greeting: greetingVal,
-    project_ids: projectIds
+    project_ids: projectIds,
+    passcode: passcodeVal
   };
 
   const newPitches = [...currentPitches];
@@ -1203,6 +2027,12 @@ async function savePitch(e) {
       return;
     }
     newPitches.push(payload);
+  }
+
+  if (role === 'confirmation') {
+    await submitChangeRequest('pitch_save', newPitches, `Save curated pitch link for client: "${titleVal}"`);
+    closePitchModal();
+    return;
   }
 
   try {
@@ -1222,10 +2052,23 @@ async function savePitch(e) {
 }
 
 async function deletePitch(index) {
+  const role = localStorage.getItem('admin_role');
+  if (role === 'readonly') {
+    alert('Permission Denied: Read-only accounts cannot modify settings.');
+    return;
+  }
+
   if (!confirm('Are you sure you want to delete this pitch?')) return;
 
   const newPitches = [...currentPitches];
   newPitches.splice(index, 1);
+
+  if (role === 'confirmation') {
+    const pitch = currentPitches[index];
+    const title = pitch ? `"${pitch.title}"` : `index ${index}`;
+    await submitChangeRequest('pitch_save', newPitches, `Delete curated pitch link: ${title}`);
+    return;
+  }
 
   try {
     if (!supabase) throw new Error('Supabase client unavailable');

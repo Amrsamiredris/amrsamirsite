@@ -17,16 +17,15 @@
     <!-- Header/Navigation -->
     <header class="header">
       <div class="container nav-container">
-        <a href="#" class="logo-link">
+        <a href="#home" class="logo-link">
           AMR SAMIR EDRIS <span class="logo-dot"></span>
         </a>
         <div class="nav-right-wrap">
           <nav>
             <ul class="nav-menu">
-              <li><a href="#experience-section" class="nav-link">Selected Work</a></li>
-              <li><a href="#documents-cabinet" class="nav-link">Documents</a></li>
-              <li><a href="#crew-section" class="nav-link">Operations Tree</a></li>
-              <li><a href="#admin" class="nav-link">Console</a></li>
+              <li><a href="#home" class="nav-link active" id="nav-btn-home">Home</a></li>
+              <li><a href="#portfolio" class="nav-link" id="nav-btn-portfolio">Portfolio & Ops</a></li>
+              <li><a href="#admin" class="nav-link" id="nav-btn-admin">Console</a></li>
             </ul>
           </nav>
           <!-- Apple sliding theme toggle -->
@@ -37,281 +36,362 @@
       </div>
     </header>
 
-    <!-- Client Pitch Welcome Banner (Rendered dynamically) -->
-    <div id="pitch-banner-container" class="container" style="display: none; margin-top: 80px; margin-bottom: -40px;">
-      <!-- Content rendered in app.js -->
+    <!-- Client Pitch Passcode Verification screen -->
+    <div class="modal-overlay" id="pitch-auth-screen" style="display: none; align-items: center; justify-content: center; z-index: 10000; background: #000;">
+      <div class="modal-content" style="max-width: 360px; text-align: center; border: 1px solid var(--border-color); background: var(--bg-card); padding: 36px 24px; border-radius: 20px;">
+        <div style="font-size: 2.2rem; color: var(--accent); margin-bottom: 16px;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 48px; height: 48px; margin: 0 auto;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+        </div>
+        <h3 style="font-size: 1.3rem; margin-bottom: 8px; color: #fff;">Passcode Required</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 24px;">This curated event showcase is passcode protected. Please enter the access code.</p>
+        <form id="pitch-auth-form">
+          <input type="password" id="pitch-auth-code" class="text-input-field" placeholder="Enter Passcode" style="text-align: center; font-size: 1.1rem; letter-spacing: 0.1em; margin-bottom: 16px;" required>
+          <div id="pitch-auth-error" style="color: #ff3b30; font-size: 0.78rem; margin-bottom: 16px; display: none;">Invalid Passcode. Please try again.</div>
+          <button type="submit" class="btn-apple btn-apple-solid" style="width: 100%;">Unlock Showcase</button>
+        </form>
+      </div>
     </div>
-    
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="container hero-grid">
-        <div class="hero-content">
-          <!-- Availability Glowing Status Badge -->
-          <div style="display: flex;">
-            <div class="status-badge-wrap" id="status-badge-container">
-              <span class="status-dot glowing" id="status-badge-dot"></span>
-              <span id="status-badge-text">Available for Projects</span>
+
+    <!-- ==========================================
+         Home / Landing Page View Panel
+         ========================================== -->
+    <div id="home-view" class="view-panel" style="display: block;">
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-content">
+            <!-- Availability Glowing Status Badge -->
+            <div style="display: flex;">
+              <div class="status-badge-wrap" id="status-badge-container">
+                <span class="status-dot glowing" id="status-badge-dot"></span>
+                <span id="status-badge-text">Available for Projects</span>
+              </div>
+            </div>
+
+            <h1 class="hero-title">Amr Samir Edris</h1>
+            
+            <div class="hero-rotating-wrap">
+              <div class="rotating-item active" id="rotator-0">immersive experiences.</div>
+              <div class="rotating-item" id="rotator-1">large-scale productions.</div>
+              <div class="rotating-item" id="rotator-2">brand campaigns.</div>
+            </div>
+
+            <p class="hero-bio" id="client-summary">
+              Over 5 years of experience leading cross-functional teams, budget allocations, and contractor operations for high-profile MENA activations including COP28, Expo 2020 Dubai, and major gaming arenas.
+            </p>
+            
+            <div style="display: flex; gap: 12px;">
+              <a href="#portfolio" class="btn-apple btn-apple-solid">Selected Work & Ops</a>
+              <a href="#documents-cabinet" class="btn-apple btn-apple-outline">Credentials Cabinet</a>
             </div>
           </div>
-
-          <h1 class="hero-title">Amr Samir Edris</h1>
           
-          <div class="hero-rotating-wrap">
-            <div class="rotating-item active" id="rotator-0">immersive experiences.</div>
-            <div class="rotating-item" id="rotator-1">large-scale productions.</div>
-            <div class="rotating-item" id="rotator-2">brand campaigns.</div>
+          <!-- Contact Card widget -->
+          <div class="widget-bento-card">
+            <div class="widget-header">
+              <h3 class="widget-title">Vital Credentials</h3>
+              <!-- QR Trigger Button -->
+              <button class="qr-trigger-btn" id="btn-show-qr" title="Show Scan QR Code">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.875 13.5a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0ZM13.5 19.5a1.875 1.875 0 1 0 3.75 0h-3.75Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 16.5h-2.25v2.25H19.5v-2.25ZM19.5 13.5h-2.25v2.25H19.5v-2.25Z" />
+                </svg>
+              </button>
+            </div>
+            <div class="widget-meta-list" style="margin-bottom: 24px;">
+              <div class="widget-meta-row">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                </svg>
+                <span>Dubai, United Arab Emirates</span>
+              </div>
+              <a href="mailto:amrsamiredris@gmail.com" class="widget-meta-row" id="client-email">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5A2.25 2.25 0 0 1 2.25 17.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+                <span>amrsamiredris@gmail.com</span>
+              </a>
+              <div class="widget-meta-row" id="client-phone">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.802-5.122-4.1-6.924-6.924l1.293-.97a1.125 1.125 0 0 0 .417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                </svg>
+                <span>+971 54 219 1028</span>
+              </div>
+              <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="widget-meta-row" id="client-linkedin">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                </svg>
+                <span>linkedin.com/in/amrsamiredris</span>
+              </a>
+            </div>
+            <!-- vCard Download -->
+            <div class="action-grid">
+              <button class="btn-apple btn-apple-solid" id="btn-download-vcard" style="width: 100%;">
+                Save Contact Card (vCard)
+              </button>
+            </div>
           </div>
+        </div>
+      </section>
 
-          <p class="hero-bio" id="client-summary">
-            Over 5 years of experience leading cross-functional teams, budget allocations, and contractor operations for high-profile MENA activations including COP28, Expo 2020 Dubai, and major gaming arenas.
-          </p>
+      <!-- Documents Drawer -->
+      <section class="section-padding cabinet-section" id="documents-cabinet" style="padding-top: 24px; padding-bottom: 24px;">
+        <div class="container">
+          <div class="section-intro" style="text-align: center; max-width: 550px; margin: 0 auto 36px auto;">
+            <div class="section-label mono-text">Credentials Cabinet</div>
+            <h2 class="section-title">Access Documents</h2>
+            <p class="section-subtitle">Review directly in the browser or download the files for offline access.</p>
+          </div>
           
-          <div style="display: flex; gap: 12px;">
-            <a href="#experience-section" class="btn-apple btn-apple-solid">Selected Work</a>
-            <a href="#documents-cabinet" class="btn-apple btn-apple-outline">Credentials Cabinet</a>
-          </div>
-        </div>
-        
-        <!-- Contact Card widget -->
-        <div class="widget-bento-card">
-          <div class="widget-header">
-            <h3 class="widget-title">Vital Credentials</h3>
-            <!-- QR Trigger Button -->
-            <button class="qr-trigger-btn" id="btn-show-qr" title="Show Scan QR Code">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.875 13.5a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0ZM13.5 19.5a1.875 1.875 0 1 0 3.75 0h-3.75Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 16.5h-2.25v2.25H19.5v-2.25ZM19.5 13.5h-2.25v2.25H19.5v-2.25Z" />
-              </svg>
-            </button>
-          </div>
-          <div class="widget-meta-list" style="margin-bottom: 24px;">
-            <div class="widget-meta-row">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-              </svg>
-              <span>Dubai, United Arab Emirates</span>
+          <div class="cabinet-grid">
+            <!-- CV Card -->
+            <div class="cabinet-cell">
+              <div>
+                <div class="mono-text" style="margin-bottom: 12px;">File — PDF</div>
+                <h3>Curriculum Vitae</h3>
+                <p class="cabinet-desc">A detailed summary of professional milestones, leadership qualifications, client portfolios, and core operations management.</p>
+              </div>
+              <div class="cabinet-buttons">
+                <button class="btn-apple btn-apple-solid" id="btn-view-cv">Open Viewer</button>
+                <a class="btn-apple btn-apple-outline" id="btn-download-cv" href="#" download>Download File</a>
+              </div>
             </div>
-            <a href="mailto:amrsamiredris@gmail.com" class="widget-meta-row" id="client-email">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5A2.25 2.25 0 0 1 2.25 17.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-              </svg>
-              <span>amrsamiredris@gmail.com</span>
-            </a>
-            <div class="widget-meta-row" id="client-phone">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.802-5.122-4.1-6.924-6.924l1.293-.97a1.125 1.125 0 0 0 .417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
-              </svg>
-              <span>+971 54 219 1028</span>
+
+            <!-- Portfolio Card -->
+            <div class="cabinet-cell">
+              <div>
+                <div class="mono-text" style="margin-bottom: 12px;">File — PDF</div>
+                <h3>Event Portfolio</h3>
+                <p class="cabinet-desc">Visual summaries, event scope metrics, crew organization layouts, and photographic case reviews of large-scale activations.</p>
+              </div>
+              <div class="cabinet-buttons">
+                <button class="btn-apple btn-apple-solid" id="btn-view-portfolio">Open Viewer</button>
+                <a class="btn-apple btn-apple-outline" id="btn-download-portfolio" href="#" download>Download File</a>
+              </div>
             </div>
-            <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="widget-meta-row" id="client-linkedin">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-              </svg>
-              <span>linkedin.com/in/amrsamiredris</span>
-            </a>
           </div>
-          <!-- vCard Download -->
-          <div class="action-grid">
-            <button class="btn-apple btn-apple-solid" id="btn-download-vcard" style="width: 100%;">
-              Save Contact Card (vCard)
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Infinite Brand marquee strip -->
-    <section class="marquee-strip-wall" id="brand-strip-section">
-      <div class="marquee-strip-inner" id="logo-marquee">
-        <!-- Loaded dynamically in app.js -->
-      </div>
-    </section>
-
-    <!-- Live Availability Calendar Section -->
-    <section class="section-padding container" id="status-calendar-section" style="padding-top: 48px; padding-bottom: 24px;">
-      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
-        
-        <!-- Availability Calendar Card -->
-        <div class="widget-bento-card" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div class="mono-text" style="margin-bottom: 12px;">Live Bookings</div>
-            <h3 style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 8px;">Availability Calendar</h3>
-            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 24px;">Monthly scheduling updates for event production engagements.</p>
-          </div>
-          <div class="calendar-widget-grid" id="calendar-widget-grid">
-            <!-- Rendered dynamically in app.js -->
-          </div>
-        </div>
-
-        <!-- Crew Structure Node Teaser -->
-        <div class="widget-bento-card" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div class="mono-text" style="margin-bottom: 12px;">Operations Hierarchy</div>
-            <h3 style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 8px;">Production Crew Blueprint</h3>
-            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 24px;">Visual map of stage managers, crew leads, and coordinate channels.</p>
-          </div>
-          <div style="display: flex; gap: 12px;">
-            <a href="#crew-section" class="btn-apple btn-apple-solid" style="width:100%;">View Blueprint Chart</a>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- Career Timeline & Budget Slider Widgets -->
-    <section class="timeline-slider-section container" id="timeline-filter-section">
-      <div class="timeline-slider-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-        <!-- Timeline Slider -->
-        <div>
-          <div class="timeline-slider-header">
-            <span class="timeline-slider-title">Career Timeline</span>
-            <span class="timeline-slider-val" id="timeline-slider-val">All Operations</span>
-          </div>
-          <input type="range" class="timeline-range-input" id="timeline-range-input" min="2020" max="2026" value="2020">
-          <div class="timeline-ticks" id="timeline-ticks-container">
-            <span class="timeline-tick-label active" data-year="all">All</span>
-            <span class="timeline-tick-label" data-year="2021">2021</span>
-            <span class="timeline-tick-label" data-year="2022">2022</span>
-            <span class="timeline-tick-label" data-year="2024">2024</span>
-            <span class="timeline-tick-label" data-year="2025">2025</span>
-            <span class="timeline-tick-label" data-year="2026">2026</span>
-          </div>
-        </div>
-        
-        <!-- Budget Slider -->
-        <div style="border-left: 1px solid var(--border-color); padding-left: 40px;" id="budget-slider-column">
-          <div class="timeline-slider-header">
-            <span class="timeline-slider-title">Minimum Event Budget Scale</span>
-            <span class="timeline-slider-val" id="budget-slider-val">Show All Budgets</span>
-          </div>
-          <input type="range" class="timeline-range-input" id="budget-range-input" min="0" max="10" value="0">
-          <div class="timeline-ticks" id="budget-ticks-container">
-            <span class="timeline-tick-label active" data-budget="0">All</span>
-            <span class="timeline-tick-label" data-budget="1">$1M</span>
-            <span class="timeline-tick-label" data-budget="2">$2M</span>
-            <span class="timeline-tick-label" data-budget="5">$5M</span>
-            <span class="timeline-tick-label" data-budget="10">$10M+</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Bento Grid Selected Work -->
-    <section class="section-padding container" id="experience-section">
-      <div class="section-intro">
-        <div class="section-label mono-text">Selected Commissions</div>
-        <h2 class="section-title">A catalog of productions, events, and campaigns.</h2>
-        <p class="section-subtitle">Use the sliders above or tags below to filter the grid structure.</p>
-      </div>
-
-      <div class="filter-tags-list" id="experience-filters">
-        <button class="tag-filter active" data-filter="all">All Operations</button>
-        <button class="tag-filter" data-filter="Gaming & Esports">Gaming & Esports</button>
-        <button class="tag-filter" data-filter="Government & Cultural">Government & Cultural</button>
-        <button class="tag-filter" data-filter="Film Festivals">Film Festivals</button>
-        <button class="tag-filter" data-filter="Medical & Healthcare">Medical & Healthcare</button>
-      </div>
-
-      <!-- Bento Layout Grid -->
-      <div class="apple-bento-grid" id="projects-grid">
-        <!-- Rendered in app.js -->
-      </div>
-    </section>
-
-    <!-- Documents Drawer -->
-    <section class="section-padding cabinet-section" id="documents-cabinet">
-      <div class="container">
-        <div class="section-intro" style="text-align: center; max-width: 550px; margin: 0 auto 48px auto;">
-          <div class="section-label mono-text">Credentials Cabinet</div>
-          <h2 class="section-title">Access Documents</h2>
-          <p class="section-subtitle">Review directly in the browser or download the files for offline access.</p>
-        </div>
-        
-        <div class="cabinet-grid">
-          <!-- CV Card -->
-          <div class="cabinet-cell">
-            <div>
-              <div class="mono-text" style="margin-bottom: 12px;">File — PDF</div>
+          <!-- Dynamic inline viewers -->
+          <div id="cv-viewer-section" class="cabinet-viewer-wrap" style="margin-top: 32px;">
+            <div class="viewer-header-row">
               <h3>Curriculum Vitae</h3>
-              <p class="cabinet-desc">A detailed summary of professional milestones, leadership qualifications, client portfolios, and core operations management.</p>
+              <button class="btn-apple btn-apple-outline" id="btn-close-cv">Close Drawer</button>
             </div>
-            <div class="cabinet-buttons">
-              <button class="btn-apple btn-apple-solid" id="btn-view-cv">Open Viewer</button>
-              <a class="btn-apple btn-apple-outline" id="btn-download-cv" href="#" download>Download File</a>
+            <div class="viewer-frame-box">
+              <iframe id="cv-iframe" src="" type="application/pdf"></iframe>
+            </div>
+            <div class="viewer-fallback-mobile">
+              <p style="margin-bottom: 16px; color: var(--text-secondary);">Mobile screens do not support inline PDF viewers.</p>
+              <a id="cv-mobile-link" href="#" target="_blank" class="btn-apple btn-apple-solid">View PDF in New Tab</a>
             </div>
           </div>
 
-          <!-- Portfolio Card -->
-          <div class="cabinet-cell">
-            <div>
-              <div class="mono-text" style="margin-bottom: 12px;">File — PDF</div>
+          <div id="portfolio-viewer-section" class="cabinet-viewer-wrap" style="margin-top: 32px;">
+            <div class="viewer-header-row">
               <h3>Event Portfolio</h3>
-              <p class="cabinet-desc">Visual summaries, event scope metrics, crew organization layouts, and photographic case reviews of large-scale activations.</p>
+              <button class="btn-apple btn-apple-outline" id="btn-close-portfolio">Close Drawer</button>
             </div>
-            <div class="cabinet-buttons">
-              <button class="btn-apple btn-apple-solid" id="btn-view-portfolio">Open Viewer</button>
-              <a class="btn-apple btn-apple-outline" id="btn-download-portfolio" href="#" download>Download File</a>
+            <div class="viewer-frame-box">
+              <iframe id="portfolio-iframe" src="" type="application/pdf"></iframe>
+            </div>
+            <div class="viewer-fallback-mobile">
+              <p style="margin-bottom: 16px; color: var(--text-secondary);">Mobile screens do not support inline PDF viewers.</p>
+              <a id="portfolio-mobile-link" href="#" target="_blank" class="btn-apple btn-apple-solid">View PDF in New Tab</a>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- Dynamic inline viewers -->
-        <div id="cv-viewer-section" class="cabinet-viewer-wrap" style="margin-top: 32px;">
-          <div class="viewer-header-row">
-            <h3>Curriculum Vitae</h3>
-            <button class="btn-apple btn-apple-outline" id="btn-close-cv">Close Drawer</button>
+      <!-- New Contact Inquiry Form Section (Apple styled) -->
+      <section class="section-padding container" id="home-contact-section" style="padding-top: 24px; padding-bottom: 48px;">
+        <div class="widget-bento-card" style="max-width: 600px; margin: 0 auto; box-shadow: var(--shadow-diffuse);">
+          <div class="section-intro" style="text-align: center; max-width: 500px; margin: 0 auto 32px auto;">
+            <div class="section-label mono-text">Connect with Amr</div>
+            <h2 class="section-title" style="font-size: 1.5rem; margin-bottom: 8px;">Inquire or Book Engagement</h2>
+            <p class="section-subtitle" style="font-size: 0.82rem;">Submit a message and select an engagement scale to align schedules.</p>
           </div>
-          <div class="viewer-frame-box">
-            <iframe id="cv-iframe" src="" type="application/pdf"></iframe>
-          </div>
-          <div class="viewer-fallback-mobile">
-            <p style="margin-bottom: 16px; color: var(--text-secondary);">Mobile screens do not support inline PDF viewers.</p>
-            <a id="cv-mobile-link" href="#" target="_blank" class="btn-apple btn-apple-solid">View PDF in New Tab</a>
-          </div>
+          
+          <form id="contact-inquiry-form">
+            <div class="input-block-row">
+              <label for="contact-name">Your Name</label>
+              <input type="text" id="contact-name" class="text-input-field" required placeholder="e.g. John Doe">
+            </div>
+            <div class="input-block-row">
+              <label for="contact-email">Email Address</label>
+              <input type="email" id="contact-email" class="text-input-field" required placeholder="e.g. name@domain.com">
+            </div>
+            <div class="input-block-row">
+              <label for="contact-subject">Inquiry Type</label>
+              <select id="contact-subject" class="text-input-field" required style="padding: 10px 8px;">
+                <option value="General Collaboration">General Collaboration</option>
+                <option value="Esports & Gaming Production">Esports & Gaming Production</option>
+                <option value="Mega Event Operations">Mega Event Operations</option>
+                <option value="Consulting Partnership">Consulting Partnership</option>
+              </select>
+            </div>
+            <div class="input-block-row">
+              <label for="contact-message">Message Details</label>
+              <textarea id="contact-message" class="text-input-field" rows="4" required placeholder="Provide event scale, date, and outline..."></textarea>
+            </div>
+            <button type="submit" class="btn-apple btn-apple-solid" style="width: 100%; margin-top: 12px;" id="btn-submit-inquiry">Send Message</button>
+            <div id="contact-submit-status" style="margin-top: 12px; font-size: 0.82rem; text-align: center;"></div>
+          </form>
         </div>
+      </section>
 
-        <div id="portfolio-viewer-section" class="cabinet-viewer-wrap" style="margin-top: 32px;">
-          <div class="viewer-header-row">
-            <h3>Event Portfolio</h3>
-            <button class="btn-apple btn-apple-outline" id="btn-close-portfolio">Close Drawer</button>
-          </div>
-          <div class="viewer-frame-box">
-            <iframe id="portfolio-iframe" src="" type="application/pdf"></iframe>
-          </div>
-          <div class="viewer-fallback-mobile">
-            <p style="margin-bottom: 16px; color: var(--text-secondary);">Mobile screens do not support inline PDF viewers.</p>
-            <a id="portfolio-mobile-link" href="#" target="_blank" class="btn-apple btn-apple-solid">View PDF in New Tab</a>
-          </div>
+      <!-- Landing Page Footer Social Links -->
+      <footer class="container" style="text-align: center; padding: 32px 0 48px 0; border-top: 1px solid var(--border-color); margin-top: 32px;">
+        <div style="display: flex; justify-content: center; gap: 24px; margin-bottom: 16px;" class="footer-social-links">
+          <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="social-icon-btn" aria-label="LinkedIn" id="social-linkedin" style="color: var(--text-secondary); transition: var(--transition-fast); display: inline-flex; align-items: center; justify-content: center;">
+            <svg style="width:22px; height:22px;" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+            </svg>
+          </a>
+          <a href="https://instagram.com/" target="_blank" class="social-icon-btn" aria-label="Instagram" id="social-instagram" style="color: var(--text-secondary); transition: var(--transition-fast); display: inline-flex; align-items: center; justify-content: center;">
+            <svg style="width:22px; height:22px;" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0 3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+          <a href="https://wa.me/971542191028" target="_blank" class="social-icon-btn" aria-label="WhatsApp" id="social-whatsapp" style="color: var(--text-secondary); transition: var(--transition-fast); display: inline-flex; align-items: center; justify-content: center;">
+            <svg style="width:22px; height:22px;" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.53 2.022 14.07 1 11.993 1 6.552 1 2.126 5.368 2.122 10.8c-.001 1.769.467 3.493 1.357 5.021l-.995 3.637 3.75-.98c1.514.827 3.197 1.258 4.795 1.258h-.005c.001 0 .001 0 0 0zm12.515-7.397c-.302-.151-1.785-.882-2.057-.981-.273-.099-.472-.148-.671.151-.198.3-.77.981-.944 1.181-.173.2-.347.225-.649.075-.302-.151-1.274-.47-2.427-1.498-.897-.8-1.502-1.787-1.678-2.09-.176-.302-.019-.465.132-.614.136-.135.302-.35.454-.525.151-.175.202-.3.302-.5.101-.2.05-.376-.025-.526-.075-.15-2.057-4.96-.672-1.181-.273-.3-.473-.347-.671-.347-.2 0-.4-.025-.6-.025-.2 0-.526.075-.801.376-.275.3-1.05 1.028-1.05 2.508s1.075 2.903 1.225 3.103c.15.2 2.11 3.224 5.116 4.519.715.309 1.273.493 1.707.63.718.228 1.37.196 1.885.12.574-.085 1.785-.73 2.038-1.436.253-.706.253-1.314.177-1.436-.076-.12-.275-.2-.577-.35z"/>
+            </svg>
+          </a>
         </div>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">&copy; 2026 Amr Samir Edris. All Rights Reserved.</p>
+      </footer>
+    </div>
+
+    <!-- ==========================================
+         Portfolio / Operations View Panel
+         ========================================== -->
+    <div id="portfolio-view" class="view-panel" style="display: none;">
+      <!-- Client Pitch Welcome Banner (Rendered dynamically) -->
+      <div id="pitch-banner-container" class="container" style="display: none; margin-top: 80px; margin-bottom: -40px;">
+        <!-- Content rendered in app.js -->
       </div>
-    </section>
 
-    <!-- Crew Tree Section -->
-    <section class="section-padding crew-structure-section" id="crew-section">
-      <div class="container">
-        <div class="section-intro" style="text-align: center; max-width: 550px; margin: 0 auto 40px auto;">
-          <div class="section-label mono-text">Operations Blueprint</div>
-          <h2 class="section-title">Production Crew Hierarchy</h2>
-          <p class="section-subtitle">A visual model of how Amr organizes crew structures for mega event productions.</p>
+      <!-- Infinite Brand marquee strip -->
+      <section class="marquee-strip-wall" id="brand-strip-section" style="margin-top: 80px;">
+        <div class="marquee-strip-inner" id="logo-marquee">
+          <!-- Loaded dynamically in app.js -->
         </div>
-        <div class="crew-tree-scroll-wrap">
-          <div class="crew-tree-layout" id="crew-tree-root">
-            <!-- Populated dynamically in app.js -->
+      </section>
+
+      <!-- Career Timeline & Budget Slider Widgets -->
+      <section class="timeline-slider-section container" id="timeline-filter-section">
+        <div class="timeline-slider-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+          <!-- Timeline Slider -->
+          <div>
+            <div class="timeline-slider-header">
+              <span class="timeline-slider-title">Career Timeline</span>
+              <span class="timeline-slider-val" id="timeline-slider-val">All Operations</span>
+            </div>
+            <input type="range" class="timeline-range-input" id="timeline-range-input" min="2020" max="2026" value="2020">
+            <div class="timeline-ticks" id="timeline-ticks-container">
+              <span class="timeline-tick-label active" data-year="all">All</span>
+              <span class="timeline-tick-label" data-year="2021">2021</span>
+              <span class="timeline-tick-label" data-year="2022">2022</span>
+              <span class="timeline-tick-label" data-year="2024">2024</span>
+              <span class="timeline-tick-label" data-year="2025">2025</span>
+              <span class="timeline-tick-label" data-year="2026">2026</span>
+            </div>
+          </div>
+          
+          <!-- Budget Slider -->
+          <div style="border-left: 1px solid var(--border-color); padding-left: 40px;" id="budget-slider-column">
+            <div class="timeline-slider-header">
+              <span class="timeline-slider-title">Minimum Event Budget Scale</span>
+              <span class="timeline-slider-val" id="budget-slider-val">Show All Budgets</span>
+            </div>
+            <input type="range" class="timeline-range-input" id="budget-range-input" min="0" max="10" value="0">
+            <div class="timeline-ticks" id="budget-ticks-container">
+              <span class="timeline-tick-label active" data-budget="0">All</span>
+              <span class="timeline-tick-label" data-budget="1">$1M</span>
+              <span class="timeline-tick-label" data-budget="2">$2M</span>
+              <span class="timeline-tick-label" data-budget="5">$5M</span>
+              <span class="timeline-tick-label" data-budget="10">$10M+</span>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Footer -->
-    <footer class="footer container">
-      <div class="footer-brand">AMR SAMIR EDRIS</div>
-      <div class="footer-nav-list">
-        <a href="mailto:amrsamiredris@gmail.com" class="footer-nav-link" id="footer-email-btn">Email</a>
-        <a href="https://linkedin.com/in/amrsamiredris" target="_blank" class="footer-nav-link" id="footer-linkedin-btn">LinkedIn</a>
-      </div>
-    </footer>
+      <!-- Bento Grid Selected Work -->
+      <section class="section-padding container" id="experience-section">
+        <div class="section-intro">
+          <div class="section-label mono-text">Selected Commissions</div>
+          <h2 class="section-title">A catalog of productions, events, and campaigns.</h2>
+          <p class="section-subtitle">Use the sliders above or tags below to filter the grid structure.</p>
+        </div>
+
+        <div class="filter-tags-list" id="experience-filters">
+          <button class="tag-filter active" data-filter="all">All Operations</button>
+          <button class="tag-filter" data-filter="Gaming & Esports">Gaming & Esports</button>
+          <button class="tag-filter" data-filter="Government & Cultural">Government & Cultural</button>
+          <button class="tag-filter" data-filter="Film Festivals">Film Festivals</button>
+          <button class="tag-filter" data-filter="Medical & Healthcare">Medical & Healthcare</button>
+        </div>
+
+        <!-- Bento Layout Grid -->
+        <div class="apple-bento-grid" id="projects-grid">
+          <!-- Rendered in app.js -->
+        </div>
+      </section>
+
+      <!-- Live Availability Calendar Section -->
+      <section class="section-padding container" id="status-calendar-section" style="padding-top: 48px; padding-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px;">
+          <!-- Availability Calendar Card -->
+          <div class="widget-bento-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="mono-text" style="margin-bottom: 12px;">Live Bookings</div>
+              <h3 style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 8px;">Availability Calendar</h3>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 24px;">Monthly scheduling updates for event production engagements.</p>
+            </div>
+            <div class="calendar-widget-grid" id="calendar-widget-grid">
+              <!-- Rendered dynamically in app.js -->
+            </div>
+          </div>
+
+          <!-- Crew Structure Node Teaser -->
+          <div class="widget-bento-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="mono-text" style="margin-bottom: 12px;">Operations Hierarchy</div>
+              <h3 style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 8px;">Production Crew Blueprint</h3>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 24px;">Visual map of stage managers, crew leads, and coordinate channels.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <a href="#crew-section" class="btn-apple btn-apple-solid" style="width:100%;">View Blueprint Chart</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Crew Tree Section -->
+      <section class="section-padding crew-structure-section" id="crew-section">
+        <div class="container">
+          <div class="section-intro" style="text-align: center; max-width: 550px; margin: 0 auto 40px auto;">
+            <div class="section-label mono-text">Operations Blueprint</div>
+            <h2 class="section-title">Production Crew Hierarchy</h2>
+            <p class="section-subtitle">A visual model of how Amr organizes crew structures for mega event productions.</p>
+          </div>
+          <div class="crew-tree-scroll-wrap">
+            <div class="crew-tree-layout" id="crew-tree-root">
+              <!-- Populated dynamically in app.js -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer fallback copyright -->
+      <footer class="container" style="text-align: center; padding: 24px 0; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.72rem;">
+        &copy; 2026 Amr Samir Edris. All Rights Reserved.
+      </footer>
+    </div>
 
     <!-- Discreet login button -->
     <a href="#admin" class="admin-login-corner-btn" title="Admin Console" id="admin-entrance-btn">
@@ -376,6 +456,20 @@
           </div>
           <button type="submit" class="btn-apple btn-apple-solid btn-login-submit">Authorize Session</button>
         </form>
+
+        <form id="accept-invite-form" style="display: none;">
+          <div class="input-block-row">
+            <label for="invite-email">Security ID (Email)</label>
+            <input type="email" id="invite-email" class="text-input-field" required readonly>
+          </div>
+          <div class="input-block-row">
+            <label for="invite-password">Set Access Code (Password)</label>
+            <input type="password" id="invite-password" class="text-input-field" required placeholder="••••••••">
+          </div>
+          <input type="hidden" id="invite-token-hidden">
+          <button type="submit" class="btn-apple btn-apple-solid btn-login-submit">Accept Invitation</button>
+        </form>
+
         <div style="margin-top: 20px; text-align: center;">
           <a href="#" style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none; font-family: var(--font-mono); text-transform: uppercase;">&larr; Back to Workspace</a>
         </div>
@@ -413,6 +507,21 @@
           <li>
             <button class="sidebar-nav-btn" data-target="panel-assets">
               Files & Webhooks
+            </button>
+          </li>
+          <li>
+            <button class="sidebar-nav-btn" data-target="panel-inbox">
+              Inquiries Inbox
+            </button>
+          </li>
+          <li>
+            <button class="sidebar-nav-btn" data-target="panel-team" id="sidebar-btn-team" style="display: none;">
+              Team & Invites
+            </button>
+          </li>
+          <li>
+            <button class="sidebar-nav-btn" data-target="panel-approvals" id="sidebar-btn-approvals" style="display: none;">
+              Approvals Queue
             </button>
           </li>
         </ul>
@@ -668,6 +777,10 @@
                   <input type="text" id="pitch-slug" class="text-input-field" required placeholder="e.g. dct">
                 </div>
                 <div class="input-block-row">
+                  <label for="pitch-passcode">Access Passcode (Optional - leave blank for public)</label>
+                  <input type="password" id="pitch-passcode" class="text-input-field" placeholder="e.g. 1234">
+                </div>
+                <div class="input-block-row">
                   <label for="pitch-greeting">Personalized Greeting message</label>
                   <textarea id="pitch-greeting" class="text-input-field" rows="3" required placeholder="Welcome DCT Abu Dhabi Team..."></textarea>
                 </div>
@@ -744,6 +857,91 @@
             
             <h4 style="color: var(--text-primary); margin-bottom: 12px; font-size: 0.88rem;">Active Partner Marks</h4>
             <div id="admin-logos-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px;">
+              <!-- Loaded dynamically in admin.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 6: Inquiries Inbox -->
+        <div class="dashboard-tab-panel" id="panel-inbox">
+          <div class="console-cms-card">
+            <h3>Contact Inquiries</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 20px;">Messages submitted by visitors through the landing page contact form.</p>
+            <div class="inbox-list-table-wrap" style="overflow-x: auto;">
+              <table class="inbox-table" style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-primary); font-size: 0.85rem;">
+                    <th style="padding: 12px 8px;">Date</th>
+                    <th style="padding: 12px 8px;">Name</th>
+                    <th style="padding: 12px 8px;">Email</th>
+                    <th style="padding: 12px 8px;">Subject</th>
+                    <th style="padding: 12px 8px;">Message</th>
+                  </tr>
+                </thead>
+                <tbody id="inbox-messages-tbody" style="font-size: 0.8rem; color: var(--text-secondary);">
+                  <!-- Loaded dynamically in admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 7: Team & Invites -->
+        <div class="dashboard-tab-panel" id="panel-team">
+          <div class="console-cms-card" style="margin-bottom: 24px;">
+            <h3>Invite Team Member</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 20px;">Grant administrative access to assistants or collaborators.</p>
+            <form id="invite-team-form">
+              <div class="input-block-row">
+                <label for="invite-member-email">Invitee Email</label>
+                <input type="email" id="invite-member-email" class="text-input-field" required placeholder="assistant@example.com">
+              </div>
+              <div class="input-block-row">
+                <label for="invite-member-role">Access Role</label>
+                <select id="invite-member-role" class="text-input-field" style="padding: 10px 8px;">
+                  <option value="readonly">Read-Only Editor (Can view analytics & CMS settings, cannot save changes)</option>
+                  <option value="confirmation">Read & Edit Editor (Changes require Super Admin approval before going live)</option>
+                  <option value="superadmin">Super Admin (Full access to modify content, approve changes, and manage team)</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-apple btn-apple-solid" style="margin-top: 16px;">Generate Invitation</button>
+            </form>
+            <div id="invite-result-container" style="margin-top: 16px; display: none; padding: 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-card-subtle);">
+              <p style="font-size: 0.8rem; margin-bottom: 8px; color: var(--text-primary); font-weight: 500;">Invitation link generated:</p>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="invite-link-output" class="text-input-field" readonly style="margin-bottom: 0; font-size: 0.75rem; flex: 1;">
+                <button type="button" class="btn-apple btn-apple-outline" id="btn-copy-invite" style="padding: 10px 16px; font-size: 0.75rem;">Copy</button>
+                <a href="#" id="btn-mail-invite" class="btn-apple btn-apple-solid" style="padding: 10px 16px; font-size: 0.75rem; display: inline-flex; align-items: center; text-decoration: none; text-align: center;">Email</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="console-cms-card">
+            <h3>Active & Pending Team Admins</h3>
+            <div class="inbox-list-table-wrap" style="overflow-x: auto;">
+              <table class="inbox-table" style="width: 100%; border-collapse: collapse; text-align: left; min-width: 500px;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-primary); font-size: 0.85rem;">
+                    <th style="padding: 12px 8px;">Email</th>
+                    <th style="padding: 12px 8px;">Role</th>
+                    <th style="padding: 12px 8px;">Status</th>
+                    <th style="padding: 12px 8px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="team-list-tbody" style="font-size: 0.8rem; color: var(--text-secondary);">
+                  <!-- Loaded dynamically in admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 8: Approvals Queue -->
+        <div class="dashboard-tab-panel" id="panel-approvals">
+          <div class="console-cms-card">
+            <h3>Pending Edits Queue</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 20px;">Edits submitted by editors that require your approval to publish live.</p>
+            <div id="approvals-list-container" style="display: flex; flex-direction: column; gap: 16px;">
               <!-- Loaded dynamically in admin.js -->
             </div>
           </div>

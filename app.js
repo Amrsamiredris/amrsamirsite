@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { logEvent } from './tracker.js';
 
 // Fallback dataset representing Amr Samir Edris's actual portfolio details
 const FALLBACK_EXPERIENCES = [
@@ -175,6 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderAvailabilityCalendar();
   renderCrewStructure();
   setupScrollTop();
+  setupContactInquiryForm();
 });
 
 window.addEventListener('hashchange', setupHashRouting);
@@ -189,13 +191,54 @@ function setupHashRouting() {
   } else {
     document.body.classList.remove('admin-mode');
     
+    // Toggle Client View Separation
+    const homeView = document.getElementById('home-view');
+    const portfolioView = document.getElementById('portfolio-view');
+    const navBtnHome = document.getElementById('nav-btn-home');
+    const navBtnPortfolio = document.getElementById('nav-btn-portfolio');
+
+    if (hash === '#portfolio' || hash.startsWith('#pitch/')) {
+      if (homeView) {
+        homeView.classList.remove('active');
+        homeView.style.display = 'none';
+      }
+      if (portfolioView) {
+        portfolioView.classList.add('active');
+        portfolioView.style.display = 'block';
+      }
+      if (navBtnHome) navBtnHome.classList.remove('active');
+      if (navBtnPortfolio) navBtnPortfolio.classList.add('active');
+    } else {
+      if (homeView) {
+        homeView.classList.add('active');
+        homeView.style.display = 'block';
+      }
+      if (portfolioView) {
+        portfolioView.classList.remove('active');
+        portfolioView.style.display = 'none';
+      }
+      if (navBtnHome) navBtnHome.classList.add('active');
+      if (navBtnPortfolio) navBtnPortfolio.classList.remove('active');
+    }
+
     if (hash.startsWith('#pitch/')) {
-      const slug = hash.substring('#pitch/'.length);
+      const slug = hash.substring('#pitch/'.length).split('?')[0];
       const pitches = siteContent.pitches || [];
       const pitch = pitches.find(p => p.slug === slug);
       
       if (pitch) {
+        // Passcode Protection Lockscreen check
+        if (pitch.passcode && pitch.passcode.trim() !== '') {
+          const authKey = 'pitch_auth_' + slug;
+          if (sessionStorage.getItem(authKey) !== 'true') {
+            showPitchLockscreen(pitch, slug);
+            return;
+          }
+        }
+        
+        hidePitchLockscreen();
         activePitch = pitch;
+        
         const bannerContainer = document.getElementById('pitch-banner-container');
         if (bannerContainer) {
           bannerContainer.innerHTML = `
@@ -220,15 +263,110 @@ function setupHashRouting() {
         activePitch = null;
         const bannerContainer = document.getElementById('pitch-banner-container');
         if (bannerContainer) bannerContainer.style.display = 'none';
+        hidePitchLockscreen();
       }
     } else {
       activePitch = null;
       const bannerContainer = document.getElementById('pitch-banner-container');
       if (bannerContainer) bannerContainer.style.display = 'none';
+      hidePitchLockscreen();
     }
     
     filterAndRenderExperiences();
   }
+}
+
+function showPitchLockscreen(pitch, slug) {
+  const lockscreen = document.getElementById('pitch-auth-screen');
+  if (!lockscreen) return;
+  
+  lockscreen.style.display = 'flex';
+  
+  const portfolioView = document.getElementById('portfolio-view');
+  if (portfolioView) {
+    portfolioView.style.opacity = '0';
+  }
+  
+  const authForm = document.getElementById('pitch-auth-form');
+  const authCodeInput = document.getElementById('pitch-auth-code');
+  const authError = document.getElementById('pitch-auth-error');
+  
+  authCodeInput.value = '';
+  authError.style.display = 'none';
+  
+  // Clone form to reset previous event listeners
+  const newAuthForm = authForm.cloneNode(true);
+  authForm.parentNode.replaceChild(newAuthForm, authForm);
+  
+  newAuthForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const entered = document.getElementById('pitch-auth-code').value;
+    if (entered === pitch.passcode) {
+      sessionStorage.setItem('pitch_auth_' + slug, 'true');
+      lockscreen.style.display = 'none';
+      if (portfolioView) {
+        portfolioView.style.opacity = '1';
+      }
+      setupHashRouting();
+    } else {
+      document.getElementById('pitch-auth-error').style.display = 'block';
+    }
+  });
+}
+
+function hidePitchLockscreen() {
+  const lockscreen = document.getElementById('pitch-auth-screen');
+  if (lockscreen) {
+    lockscreen.style.display = 'none';
+  }
+  const portfolioView = document.getElementById('portfolio-view');
+  if (portfolioView) {
+    portfolioView.style.opacity = '1';
+  }
+}
+
+function setupContactInquiryForm() {
+  const contactForm = document.getElementById('contact-inquiry-form');
+  if (!contactForm) return;
+  
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = document.getElementById('btn-submit-inquiry');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending Message...';
+    }
+    
+    const statusEl = document.getElementById('contact-submit-status');
+    if (statusEl) {
+      statusEl.textContent = '';
+    }
+    
+    const name = document.getElementById('contact-name').value;
+    const email = document.getElementById('contact-email').value;
+    const subject = document.getElementById('contact-subject').value;
+    const message = document.getElementById('contact-message').value;
+    
+    try {
+      await logEvent('contact_inquiry', JSON.stringify({ name, email, subject, message }));
+      if (statusEl) {
+        statusEl.style.color = '#30d158';
+        statusEl.textContent = 'Thank you! Your message has been sent successfully.';
+      }
+      contactForm.reset();
+    } catch (err) {
+      console.error(err);
+      if (statusEl) {
+        statusEl.style.color = '#ff453a';
+        statusEl.textContent = 'Failed to send message. Please try again.';
+      }
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Message';
+      }
+    }
+  });
 }
 
 // Light & Dark theme toggle controller
