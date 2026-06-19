@@ -1332,6 +1332,9 @@ async function loadGeneralSettingsCMS() {
 
     const pixelEl = document.getElementById('cms-pixel-id');
     if (pixelEl) pixelEl.value = siteSettings.fb_pixel_id || '';
+
+    const umamiEl = document.getElementById('cms-umami-id');
+    if (umamiEl) umamiEl.value = siteSettings.umami_website_id || '';
     
     // Chain-load interactive features panels
     loadCalendarCMS();
@@ -1421,11 +1424,13 @@ async function saveAnalyticsIntegration(e) {
   const gaVal = document.getElementById('cms-ga-id').value.trim();
   const clarityVal = document.getElementById('cms-clarity-id').value.trim();
   const pixelVal = document.getElementById('cms-pixel-id').value.trim();
+  const umamiVal = document.getElementById('cms-umami-id').value.trim();
 
   const payloads = [
     { key: 'google_analytics_id', value: gaVal },
     { key: 'clarity_id', value: clarityVal },
-    { key: 'fb_pixel_id', value: pixelVal }
+    { key: 'fb_pixel_id', value: pixelVal },
+    { key: 'umami_website_id', value: umamiVal }
   ];
 
   if (role === 'confirmation') {

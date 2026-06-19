@@ -467,12 +467,12 @@ async function loadContent() {
   setupFileLinks();
 
   // Inject third-party analytics integrations if defined
-  injectAnalytics(siteContent.google_analytics_id, siteContent.clarity_id, siteContent.fb_pixel_id);
+  injectAnalytics(siteContent.google_analytics_id, siteContent.clarity_id, siteContent.fb_pixel_id, siteContent.umami_website_id);
 }
 
 let analyticsInjected = false;
 
-function injectAnalytics(gaId, clarityId, pixelId) {
+function injectAnalytics(gaId, clarityId, pixelId, umamiId) {
   if (analyticsInjected) return;
   analyticsInjected = true;
 
@@ -525,6 +525,17 @@ function injectAnalytics(gaId, clarityId, pixelId) {
     `;
     document.head.appendChild(script);
     console.log('Facebook Pixel injected with ID:', pixelId);
+  }
+
+  // Umami Analytics
+  if (umamiId) {
+    const script = document.createElement('script');
+    script.async = true;
+    script.defer = true;
+    script.dataset.websiteId = umamiId;
+    script.src = "https://cloud.umami.is/script.js";
+    document.head.appendChild(script);
+    console.log('Umami Analytics injected with ID:', umamiId);
   }
 }
 
