@@ -1036,12 +1036,12 @@ body.admin-mode .admin-view-container {
 }
 
 /* Dashboard Panel Grid */
-.console-layout {
+.console-layout, .dashboard-layout {
   display: flex;
   min-height: 100vh;
 }
 
-.console-sidebar {
+.console-sidebar, .dashboard-sidebar {
   width: 230px;
   border-right: 1px solid var(--border-color);
   padding: 32px 16px;
@@ -1050,7 +1050,7 @@ body.admin-mode .admin-view-container {
   background: var(--bg-secondary);
 }
 
-.console-sidebar-title {
+.console-sidebar-title, .sidebar-title {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -1061,7 +1061,7 @@ body.admin-mode .admin-view-container {
   gap: 8px;
 }
 
-.console-nav-menu {
+.console-nav-menu, .sidebar-nav-list {
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -1069,7 +1069,7 @@ body.admin-mode .admin-view-container {
   flex-grow: 1;
 }
 
-.console-nav-btn {
+.console-nav-btn, .sidebar-nav-btn {
   width: 100%;
   padding: 8px 12px;
   border-radius: 8px;
@@ -1087,27 +1087,27 @@ body.admin-mode .admin-view-container {
   transition: var(--transition-fast);
 }
 
-.console-nav-btn:hover, .console-nav-btn.active {
+.console-nav-btn:hover, .console-nav-btn.active, .sidebar-nav-btn:hover, .sidebar-nav-btn.active {
   color: var(--text-primary);
   background: var(--bg-primary);
 }
 
-.console-nav-btn.active {
+.console-nav-btn.active, .sidebar-nav-btn.active {
   color: var(--accent);
   font-weight: 600;
 }
 
-.console-sidebar-bottom {
+.console-sidebar-bottom, .sidebar-bottom {
   margin-top: auto;
   border-top: 1px solid var(--border-color);
   padding-top: 16px;
 }
 
-.console-sidebar-bottom .console-nav-btn {
+.console-sidebar-bottom .console-nav-btn, .sidebar-bottom .sidebar-nav-btn {
   color: #ff453a; /* Apple System Red */
 }
 
-.console-sidebar-bottom .console-nav-btn:hover {
+.console-sidebar-bottom .console-nav-btn:hover, .sidebar-bottom .sidebar-nav-btn:hover {
   background: rgba(255, 69, 58, 0.08);
 }
 
@@ -1131,11 +1131,11 @@ body.admin-mode .admin-view-container {
   color: var(--text-primary);
 }
 
-.console-tab-panel {
+.console-tab-panel, .dashboard-tab-panel {
   display: none;
 }
 
-.console-tab-panel.active {
+.console-tab-panel.active, .dashboard-tab-panel.active {
   display: block;
 }
 
