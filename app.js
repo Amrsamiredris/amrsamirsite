@@ -465,6 +465,67 @@ async function loadContent() {
 
   // Load document PDF links
   setupFileLinks();
+
+  // Inject third-party analytics integrations if defined
+  injectAnalytics(siteContent.google_analytics_id, siteContent.clarity_id, siteContent.fb_pixel_id);
+}
+
+let analyticsInjected = false;
+
+function injectAnalytics(gaId, clarityId, pixelId) {
+  if (analyticsInjected) return;
+  analyticsInjected = true;
+
+  // Google Analytics
+  if (gaId) {
+    const script1 = document.createElement('script');
+    script1.async = true;
+    script1.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+    document.head.appendChild(script1);
+
+    const script2 = document.createElement('script');
+    script2.innerHTML = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${gaId}');
+    `;
+    document.head.appendChild(script2);
+    console.log('Google Analytics injected with ID:', gaId);
+  }
+
+  // Microsoft Clarity
+  if (clarityId) {
+    const script = document.createElement('script');
+    script.innerHTML = `
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "${clarityId}");
+    `;
+    document.head.appendChild(script);
+    console.log('Microsoft Clarity injected with ID:', clarityId);
+  }
+
+  // Facebook Pixel
+  if (pixelId) {
+    const script = document.createElement('script');
+    script.innerHTML = `
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '${pixelId}');
+      fbq('track', 'PageView');
+    `;
+    document.head.appendChild(script);
+    console.log('Facebook Pixel injected with ID:', pixelId);
+  }
 }
 
 async function setupFileLinks() {
@@ -826,6 +887,7 @@ END:VCARD`;
 }
 
 // Interactive Apple timeline slider
+let timelineDebounceTimer;
 function setupTimelineSlider() {
   const slider = document.getElementById('timeline-range-input');
   const sliderVal = document.getElementById('timeline-slider-val');
@@ -873,10 +935,17 @@ function setupTimelineSlider() {
     }
     
     filterAndRenderExperiences();
+
+    // Log timeline filter change event (debounced to avoid spamming database)
+    clearTimeout(timelineDebounceTimer);
+    timelineDebounceTimer = setTimeout(() => {
+      logEvent('timeline_filter', activeFilterYear);
+    }, 1000);
   }
 }
 
 // Budget Filter Slider
+let budgetDebounceTimer;
 function setupBudgetSlider() {
   const slider = document.getElementById('budget-range-input');
   const sliderVal = document.getElementById('budget-slider-val');
@@ -928,6 +997,12 @@ function setupBudgetSlider() {
     }
     
     filterAndRenderExperiences();
+
+    // Log budget filter change event (debounced to avoid spamming database)
+    clearTimeout(budgetDebounceTimer);
+    budgetDebounceTimer = setTimeout(() => {
+      logEvent('budget_filter', val === 0 ? 'All' : `>$${val}M`);
+    }, 1000);
   }
 }
 
@@ -1039,6 +1114,7 @@ function setupInteractivity() {
 
   document.getElementById('btn-close-cv').addEventListener('click', () => {
     cvSec.classList.remove('active');
+    logEvent('pdf_close', 'CV');
     document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
   });
 
@@ -1056,6 +1132,7 @@ function setupInteractivity() {
 
   document.getElementById('btn-close-portfolio').addEventListener('click', () => {
     portSec.classList.remove('active');
+    logEvent('pdf_close', 'Portfolio');
     document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
   });
 }

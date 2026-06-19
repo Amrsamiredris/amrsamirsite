@@ -543,6 +543,24 @@
 
         <!-- Panel 1: Analytics -->
         <div class="console-tab-panel active" id="panel-analytics">
+          <!-- Third-Party Console Quick Links -->
+          <div class="console-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 24px;">
+            <a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer" class="console-kpi-card" style="text-decoration: none; cursor: pointer; transition: all 0.2s ease; border: 1px dashed var(--accent); display: block;">
+              <div class="console-kpi-eyebrow" style="color: var(--accent); display: flex; align-items: center; justify-content: space-between; font-weight: 600;">
+                <span>Google Analytics Console</span>
+                <span style="font-size: 1rem;">&nearr;</span>
+              </div>
+              <div style="font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary); line-height: 1.4;">View visitor acquisition, traffic channels, and real-time reports.</div>
+            </a>
+            <a href="https://clarity.microsoft.com/projects" target="_blank" rel="noopener noreferrer" class="console-kpi-card" style="text-decoration: none; cursor: pointer; transition: all 0.2s ease; border: 1px dashed var(--accent); display: block;">
+              <div class="console-kpi-eyebrow" style="color: var(--accent); display: flex; align-items: center; justify-content: space-between; font-weight: 600;">
+                <span>Microsoft Clarity Dashboard</span>
+                <span style="font-size: 1rem;">&nearr;</span>
+              </div>
+              <div style="font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary); line-height: 1.4;">Watch user session recordings, click heatmaps, and rage clicks.</div>
+            </a>
+          </div>
+
           <div class="console-kpi-grid">
             <div class="console-kpi-card">
               <div class="console-kpi-eyebrow">Unique Visitors</div>
@@ -595,6 +613,39 @@
               </tbody>
             </table>
           </div>
+
+          <!-- Tables Grid for Referrers and Geolocation -->
+          <div class="console-charts-grid" style="margin-top: 24px;">
+            <div class="console-table-card" style="margin-bottom: 0;">
+              <h3>Traffic Sources / Referrers</h3>
+              <table class="console-table-view">
+                <thead>
+                  <tr>
+                    <th>Referrer Host</th>
+                    <th>Sessions</th>
+                  </tr>
+                </thead>
+                <tbody id="table-referrers-body">
+                  <!-- Loaded dynamically in admin.js -->
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="console-table-card" style="margin-bottom: 0;">
+              <h3>Visitor Countries / Languages</h3>
+              <table class="console-table-view">
+                <thead>
+                  <tr>
+                    <th>Location / Country</th>
+                    <th>Sessions</th>
+                  </tr>
+                </thead>
+                <tbody id="table-countries-body">
+                  <!-- Loaded dynamically in admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- Panel 2: General CMS -->
@@ -638,6 +689,27 @@
               <button type="submit" class="btn-apple btn-apple-solid" style="margin-top: 12px;">Commit Configuration</button>
             </div>
           </form>
+
+          <!-- Analytics Integration -->
+          <div class="console-cms-card">
+            <h3>Analytics Integration</h3>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 20px;">Integrate third-party free analytics tracking systems. Leave fields blank to disable.</p>
+            <form id="cms-analytics-form">
+              <div class="input-block-row">
+                <label for="cms-ga-id">Google Analytics Measurement ID (G-XXXXXXXXXX)</label>
+                <input type="text" id="cms-ga-id" class="text-input-field" placeholder="G-XXXXXXXXXX">
+              </div>
+              <div class="input-block-row">
+                <label for="cms-clarity-id">Microsoft Clarity Project ID</label>
+                <input type="text" id="cms-clarity-id" class="text-input-field" placeholder="xxxxxxxxxx">
+              </div>
+              <div class="input-block-row">
+                <label for="cms-pixel-id">Facebook Pixel ID</label>
+                <input type="text" id="cms-pixel-id" class="text-input-field" placeholder="XXXXXXXXXXXXXXXX">
+              </div>
+              <button type="submit" class="btn-apple btn-apple-solid" style="margin-top: 12px;">Save Analytics Integration</button>
+            </form>
+          </div>
 
           <!-- Calendar Availability editor -->
           <div class="console-cms-card">

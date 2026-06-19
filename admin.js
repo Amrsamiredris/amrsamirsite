@@ -58,6 +58,12 @@ function setupAdminListeners() {
     generalForm.addEventListener('submit', saveGeneralSettings);
   }
 
+  // Analytics configuration form submit
+  const analyticsForm = document.getElementById('cms-analytics-form');
+  if (analyticsForm) {
+    analyticsForm.addEventListener('submit', saveAnalyticsIntegration);
+  }
+
   // Add experience record trigger
   const addExpBtn = document.getElementById('btn-add-experience');
   if (addExpBtn) {
@@ -177,8 +183,34 @@ function applyRoleUI() {
   
   const existingBanner = document.getElementById('role-alert-banner');
   if (existingBanner) existingBanner.remove();
+
+  const existingBypassBanner = document.getElementById('bypass-alert-banner');
+  if (existingBypassBanner) existingBypassBanner.remove();
   
   const header = document.querySelector('.console-panel-header');
+
+  if (localStorage.getItem('admin_email') === 'amr') {
+    const banner = document.createElement('div');
+    banner.id = 'bypass-alert-banner';
+    banner.className = 'readonly-alert-banner';
+    banner.style.background = 'rgba(255, 69, 58, 0.15)';
+    banner.style.color = '#ff453a';
+    banner.style.border = '1px solid rgba(255, 69, 58, 0.3)';
+    banner.style.borderRadius = '12px';
+    banner.style.padding = '12px 16px';
+    banner.style.marginBottom = '24px';
+    banner.style.fontSize = '0.85rem';
+    banner.style.display = 'flex';
+    banner.style.alignItems = 'center';
+    banner.style.gap = '10px';
+    banner.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:18px; height:18px; flex-shrink:0;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+      </svg>
+      <span><strong>Offline / Bypass mode:</strong> You logged in with the local bypass. Supabase database writes and uploads will fail. To edit, please create an admin user in your Supabase Auth dashboard and sign in with that email.</span>
+    `;
+    if (header) header.parentNode.insertBefore(banner, header.nextSibling);
+  }
   
   if (role === 'readonly') {
     const banner = document.createElement('div');
@@ -302,13 +334,34 @@ async function checkAuthAndInit() {
     } else if (supabase) {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const { data } = await supabase
-          .from('site_content')
-          .select('*')
-          .eq('key', 'invited_admins')
-          .single();
-          
-        const invites = data ? data.value : [];
+        let invites = [];
+        try {
+          const { data, error } = await supabase
+            .from('site_content')
+            .select('*')
+            .eq('key', 'invited_admins')
+            .single();
+          if (!error && data && data.value) {
+            invites = data.value;
+          }
+        } catch (e) {
+          console.warn('Could not fetch invites, assuming empty:', e);
+        }
+
+        // Bootstrap: If no admins are invited, automatically make the first user a Super Admin
+        if (invites.length === 0) {
+          console.log('No registered admins found. Bootstrapping user:', session.user.email);
+          invites = [{
+            email: session.user.email,
+            role: 'superadmin',
+            status: 'accepted',
+            token: 'bootstrap'
+          }];
+          await supabase
+            .from('site_content')
+            .upsert({ key: 'invited_admins', value: invites }, { onConflict: 'key' });
+        }
+        
         const userInvite = invites.find(i => i.email.toLowerCase() === session.user.email.toLowerCase());
         
         if (userInvite && userInvite.status === 'accepted') {
@@ -369,13 +422,35 @@ async function handleLogin(e) {
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError) throw authError;
 
-    const { data: inviteData } = await supabase
-      .from('site_content')
-      .select('*')
-      .eq('key', 'invited_admins')
-      .single();
+    let invites = [];
+    try {
+      const { data: inviteData, error: inviteError } = await supabase
+        .from('site_content')
+        .select('*')
+        .eq('key', 'invited_admins')
+        .single();
+      if (!inviteError && inviteData && inviteData.value) {
+        invites = inviteData.value;
+      }
+    } catch (e) {
+      console.warn('Could not fetch invites, assuming empty:', e);
+    }
       
-    const invites = inviteData ? inviteData.value : [];
+    // Bootstrap: If no admins are invited, automatically make the first user a Super Admin
+    if (invites.length === 0) {
+      console.log('No registered admins found. Bootstrapping user:', email);
+      const bootstrapAdmin = {
+        email: email,
+        role: 'superadmin',
+        status: 'accepted',
+        token: 'bootstrap'
+      };
+      invites = [bootstrapAdmin];
+      await supabase
+        .from('site_content')
+        .upsert({ key: 'invited_admins', value: invites }, { onConflict: 'key' });
+    }
+
     const matchedInvite = invites.find(i => i.email.toLowerCase() === email.toLowerCase());
     
     if (matchedInvite && matchedInvite.status === 'accepted') {
@@ -989,6 +1064,7 @@ async function loadAnalyticsData() {
     renderVisitsChart(events);
     renderDurationsChart(events);
     renderSectionsTable(events);
+    renderSessionInitTables(events);
     
   } catch (err) {
     console.warn('Analytics retrieval error:', err.message);
@@ -1160,6 +1236,66 @@ function renderSectionsTable(events) {
   }
 }
 
+// Render referrers and countries tables from session_init events
+function renderSessionInitTables(events) {
+  const refTbody = document.getElementById('table-referrers-body');
+  const countryTbody = document.getElementById('table-countries-body');
+  
+  if (!refTbody || !countryTbody) return;
+  
+  refTbody.innerHTML = '';
+  countryTbody.innerHTML = '';
+  
+  const initEvents = events.filter(e => e.event_type === 'session_init');
+  
+  const referrers = {};
+  const countries = {};
+  
+  initEvents.forEach(e => {
+    try {
+      const data = JSON.parse(e.event_label);
+      if (data.referrer) {
+        referrers[data.referrer] = (referrers[data.referrer] || 0) + 1;
+      }
+      if (data.country) {
+        countries[data.country] = (countries[data.country] || 0) + 1;
+      }
+    } catch (err) {
+      // Ignore parsing errors for malformed legacy labels
+    }
+  });
+  
+  // Sort and render referrers
+  const sortedReferrers = Object.entries(referrers).sort((a, b) => b[1] - a[1]);
+  if (sortedReferrers.length === 0) {
+    refTbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 12px 8px;">No referrer data recorded yet.</td></tr>`;
+  } else {
+    sortedReferrers.forEach(([ref, count]) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);"><strong>${escapeHtml(ref)}</strong></td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); text-align: right; color: var(--accent); font-weight: 500;">${count} sessions</td>
+      `;
+      refTbody.appendChild(tr);
+    });
+  }
+  
+  // Sort and render countries
+  const sortedCountries = Object.entries(countries).sort((a, b) => b[1] - a[1]);
+  if (sortedCountries.length === 0) {
+    countryTbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 12px 8px;">No country data recorded yet.</td></tr>`;
+  } else {
+    sortedCountries.forEach(([country, count]) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color);"><strong>${escapeHtml(country)}</strong></td>
+        <td style="padding: 12px 8px; border-bottom: 1px solid var(--border-color); text-align: right; color: var(--accent); font-weight: 500;">${count} sessions</td>
+      `;
+      countryTbody.appendChild(tr);
+    });
+  }
+}
+
 // ==========================================================================
 // Site Content CMS Logic
 // ==========================================================================
@@ -1187,6 +1323,15 @@ async function loadGeneralSettingsCMS() {
     document.getElementById('cms-email').value = siteSettings.email || '';
     document.getElementById('cms-phone').value = siteSettings.phone || '';
     document.getElementById('cms-linkedin').value = siteSettings.linkedin || '';
+    
+    const gaEl = document.getElementById('cms-ga-id');
+    if (gaEl) gaEl.value = siteSettings.google_analytics_id || '';
+
+    const clarityEl = document.getElementById('cms-clarity-id');
+    if (clarityEl) clarityEl.value = siteSettings.clarity_id || '';
+
+    const pixelEl = document.getElementById('cms-pixel-id');
+    if (pixelEl) pixelEl.value = siteSettings.fb_pixel_id || '';
     
     // Chain-load interactive features panels
     loadCalendarCMS();
@@ -1257,6 +1402,58 @@ async function saveGeneralSettings(e) {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Commit Configuration';
+  }
+}
+
+async function saveAnalyticsIntegration(e) {
+  e.preventDefault();
+  
+  const role = localStorage.getItem('admin_role');
+  if (role === 'readonly') {
+    alert('Permission Denied: Read-only accounts cannot modify settings.');
+    return;
+  }
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = role === 'confirmation' ? 'Submitting request...' : 'Saving...';
+
+  const gaVal = document.getElementById('cms-ga-id').value.trim();
+  const clarityVal = document.getElementById('cms-clarity-id').value.trim();
+  const pixelVal = document.getElementById('cms-pixel-id').value.trim();
+
+  const payloads = [
+    { key: 'google_analytics_id', value: gaVal },
+    { key: 'clarity_id', value: clarityVal },
+    { key: 'fb_pixel_id', value: pixelVal }
+  ];
+
+  if (role === 'confirmation') {
+    try {
+      await submitChangeRequest('general_settings', payloads, 'Update third-party analytics integrations');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit for Approval';
+    }
+    return;
+  }
+
+  try {
+    if (!supabase) throw new Error('Supabase client unavailable');
+
+    for (const item of payloads) {
+      const { error } = await supabase
+        .from('site_content')
+        .upsert(item, { onConflict: 'key' });
+      if (error) throw error;
+    }
+
+    alert('Analytics integrations saved successfully!');
+  } catch (err) {
+    alert('Analytics Update Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Analytics Integration';
   }
 }
 

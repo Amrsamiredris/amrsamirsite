@@ -16,7 +16,7 @@ const sessionId = getSessionId();
 export async function logEvent(type, label = '', duration = 0) {
   try {
     // Avoid tracking admin activities
-    if (type !== 'contact_inquiry' && (window.location.hash === '#admin' || localStorage.getItem('sb-access-token'))) {
+    if (type !== 'contact_inquiry' && (window.location.hash.startsWith('#admin') || localStorage.getItem('admin_role'))) {
       return;
     }
     
@@ -36,9 +36,77 @@ export async function logEvent(type, label = '', duration = 0) {
   }
 }
 
+// Track session init (referrer, device class, country)
+async function logSessionInit() {
+  try {
+    // Check if session has already been initialized in this session to prevent duplicate logs on refresh
+    const isFirstTime = !sessionStorage.getItem('ase_session_initialized');
+    if (!isFirstTime) return;
+    
+    sessionStorage.setItem('ase_session_initialized', 'true');
+    
+    // 1. Get Referrer
+    const ref = document.referrer;
+    let referrerHost = 'Direct / Bookmark';
+    if (ref) {
+      try {
+        const url = new URL(ref);
+        referrerHost = url.hostname;
+        // Clean up common referrer hosts
+        if (referrerHost.includes('google.')) referrerHost = 'Google Search';
+        else if (referrerHost.includes('bing.')) referrerHost = 'Bing Search';
+        else if (referrerHost.includes('linkedin.')) referrerHost = 'LinkedIn';
+        else if (referrerHost.includes('github.')) referrerHost = 'GitHub';
+      } catch (e) {
+        referrerHost = ref;
+      }
+    }
+    
+    // 2. Get Device Class
+    let deviceClass = 'Desktop';
+    const ua = navigator.userAgent;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+      deviceClass = 'Tablet';
+    } else if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
+      deviceClass = 'Mobile';
+    }
+    
+    // 3. Get Location
+    let country = 'Unknown';
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+      const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        country = data.country_name || data.country || 'Unknown';
+      }
+    } catch (e) {
+      const lang = navigator.language || navigator.userLanguage;
+      if (lang) country = `Unknown (${lang})`;
+    }
+    
+    const info = {
+      referrer: referrerHost,
+      device: deviceClass,
+      country: country,
+      screen: `${window.screen.width}x${window.screen.height}`
+    };
+    
+    // Delay slightly to let main thread finish DOM operations
+    setTimeout(() => {
+      logEvent('session_init', JSON.stringify(info));
+    }, 500);
+  } catch (err) {
+    console.warn('Session initialization logging failed:', err);
+  }
+}
+
 // Track page load
 window.addEventListener('DOMContentLoaded', () => {
   logEvent('pageview', window.location.pathname);
+  logSessionInit();
   setupSectionTracking();
   setupClickTracking();
 });
