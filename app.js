@@ -348,12 +348,29 @@ function setupContactInquiryForm() {
     const message = document.getElementById('contact-message').value;
     
     try {
+      // 1. Log to local analytics_events for CMS console inbox
       await logEvent('contact_inquiry', JSON.stringify({ name, email, subject, message }));
-      if (statusEl) {
-        statusEl.style.color = '#30d158';
-        statusEl.textContent = 'Thank you! Your message has been sent successfully.';
+      
+      // 2. Post to Web3Forms so Amr receives an email notification
+      const formData = new FormData(contactForm);
+      formData.append("access_key", "3696e8f4-4baf-4f57-a9c7-6ffcb0324777");
+      
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        if (statusEl) {
+          statusEl.style.color = '#30d158';
+          statusEl.textContent = 'Thank you! Your message has been sent successfully.';
+        }
+        contactForm.reset();
+      } else {
+        throw new Error(data.message || 'Failed to submit form to Web3Forms.');
       }
-      contactForm.reset();
     } catch (err) {
       console.error(err);
       if (statusEl) {

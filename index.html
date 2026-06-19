@@ -218,15 +218,15 @@
           <form id="contact-inquiry-form">
             <div class="input-block-row">
               <label for="contact-name">Your Name</label>
-              <input type="text" id="contact-name" class="text-input-field" required placeholder="e.g. John Doe">
+              <input type="text" id="contact-name" name="name" class="text-input-field" required placeholder="e.g. John Doe">
             </div>
             <div class="input-block-row">
               <label for="contact-email">Email Address</label>
-              <input type="email" id="contact-email" class="text-input-field" required placeholder="e.g. name@domain.com">
+              <input type="email" id="contact-email" name="email" class="text-input-field" required placeholder="e.g. name@domain.com">
             </div>
             <div class="input-block-row">
               <label for="contact-subject">Inquiry Type</label>
-              <select id="contact-subject" class="text-input-field" required style="padding: 10px 8px;">
+              <select id="contact-subject" name="subject" class="text-input-field" required style="padding: 10px 8px;">
                 <option value="General Collaboration">General Collaboration</option>
                 <option value="Esports & Gaming Production">Esports & Gaming Production</option>
                 <option value="Mega Event Operations">Mega Event Operations</option>
@@ -235,7 +235,7 @@
             </div>
             <div class="input-block-row">
               <label for="contact-message">Message Details</label>
-              <textarea id="contact-message" class="text-input-field" rows="4" required placeholder="Provide event scale, date, and outline..."></textarea>
+              <textarea id="contact-message" name="message" class="text-input-field" rows="4" required placeholder="Provide event scale, date, and outline..."></textarea>
             </div>
             <button type="submit" class="btn-apple btn-apple-solid" style="width: 100%; margin-top: 12px;" id="btn-submit-inquiry">Send Message</button>
             <div id="contact-submit-status" style="margin-top: 12px; font-size: 0.82rem; text-align: center;"></div>
