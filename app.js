@@ -174,6 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupBudgetSlider();
   renderAvailabilityCalendar();
   renderCrewStructure();
+  setupScrollTop();
 });
 
 window.addEventListener('hashchange', setupHashRouting);
@@ -901,5 +902,22 @@ function setupInteractivity() {
   document.getElementById('btn-close-portfolio').addEventListener('click', () => {
     portSec.classList.remove('active');
     document.querySelector('.hero').scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+function setupScrollTop() {
+  const btn = document.getElementById('btn-scroll-top');
+  if (!btn) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 300) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  });
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
