@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.8",
-    "chart.js": "^4.4.2"
+    "chart.js": "^4.4.2",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
     "vite": "^5.1.6"
